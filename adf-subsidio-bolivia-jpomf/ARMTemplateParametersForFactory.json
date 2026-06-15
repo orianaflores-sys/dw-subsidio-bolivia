@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-subsidio-bolivia-jpomf"
+		},
+		"ls_blob_subsidio_connectionString": {
+			"value": ""
+		},
+		"ls_sql_dw_subsidio_password": {
+			"value": ""
+		},
+		"ls_sql_dw_subsidio_properties_typeProperties_server": {
+			"value": "sql-srv-subsidio-jpomf.database.windows.net"
+		},
+		"ls_sql_dw_subsidio_properties_typeProperties_database": {
+			"value": "dw_subsidio_bolivia"
+		},
+		"ls_sql_dw_subsidio_properties_typeProperties_userName": {
+			"value": "sqladmin"
+		}
+	}
+}
