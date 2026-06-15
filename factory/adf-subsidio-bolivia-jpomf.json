@@ -1,0 +1,15 @@
+{
+	"name": "adf-subsidio-bolivia-jpomf",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "brazilsouth",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "b236b47d-9e39-4d25-a711-8cc95851292a",
+		"tenantId": "cc28633f-12b8-46cb-bc15-951dae239b4d"
+	}
+}
