@@ -1,0 +1,85 @@
+{
+	"name": "ds_csv_silver_segip",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "segip.csv",
+				"folderPath": "segip",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "ci",
+				"type": "String"
+			},
+			{
+				"name": "nombres",
+				"type": "String"
+			},
+			{
+				"name": "apellido_paterno",
+				"type": "String"
+			},
+			{
+				"name": "apellido_materno",
+				"type": "String"
+			},
+			{
+				"name": "fecha_nacimiento",
+				"type": "String"
+			},
+			{
+				"name": "genero",
+				"type": "String"
+			},
+			{
+				"name": "estado_civil",
+				"type": "String"
+			},
+			{
+				"name": "ci_conyuge",
+				"type": "String"
+			},
+			{
+				"name": "numero_hijos",
+				"type": "String"
+			},
+			{
+				"name": "ci_padre",
+				"type": "String"
+			},
+			{
+				"name": "ci_madre",
+				"type": "String"
+			},
+			{
+				"name": "profesion",
+				"type": "String"
+			},
+			{
+				"name": "nivel_estudios",
+				"type": "String"
+			},
+			{
+				"name": "municipio_residencia",
+				"type": "String"
+			},
+			{
+				"name": "fecha_emision",
+				"type": "String"
+			}
+		]
+	}
+}
