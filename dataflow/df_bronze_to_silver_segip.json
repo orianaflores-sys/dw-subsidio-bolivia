@@ -2,7 +2,7 @@
 	"name": "df_bronze_to_silver_segip",
 	"properties": {
 		"folder": {
-			"name": "bronze"
+			"name": "silver"
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
