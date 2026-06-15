@@ -1,0 +1,59 @@
+{
+	"name": "df_bronze_to_silver_segip",
+	"properties": {
+		"folder": {
+			"name": "bronze"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_segip",
+						"type": "DatasetReference"
+					},
+					"name": "sourceSegip"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ci as string,",
+				"          nombres as string,",
+				"          apellido_paterno as string,",
+				"          apellido_materno as string,",
+				"          fecha_nacimiento as string,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          ci_conyuge as string,",
+				"          numero_hijos as string,",
+				"          ci_padre as string,",
+				"          ci_madre as string,",
+				"          profesion as string,",
+				"          nivel_estudios as string,",
+				"          municipio_residencia as string,",
+				"          fecha_emision as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceSegip",
+				"sourceSegip derive(ci = trim(ci),",
+				"          nombres = trim(nombres),",
+				"          apellido_paterno = trim(apellido_paterno),",
+				"          apellido_materno = trim(apellido_materno),",
+				"          fecha_nacimiento = toDate(fecha_nacimiento, 'yyyy-MM-dd'),",
+				"          genero = upper(trim(genero)),",
+				"          estado_civil = upper(trim(estado_civil)),",
+				"          numero_hijos = toInteger(numero_hijos),",
+				"          municipio_residencia = trim(municipio_residencia),",
+				"          fecha_emision = toDate(fecha_emision, 'yyyy-MM-dd'),",
+				"          departamento_ci = case(right(ci,2)=='LP','LA PAZ',right(ci,2)=='CB','COCHABAMBA',right(ci,2)=='SC','SANTA CRUZ',right(ci,2)=='OR','ORURO',right(ci,2)=='PT','POTOSI',right(ci,2)=='TJ','TARIJA',right(ci,2)=='CH','CHUQUISACA',right(ci,2)=='BN','BENI',right(ci,2)=='PD','PANDO','DESCONOCIDO')) ~> derivedColumn1"
+			]
+		}
+	}
+}
