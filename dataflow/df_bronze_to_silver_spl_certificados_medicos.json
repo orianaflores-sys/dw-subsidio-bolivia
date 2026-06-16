@@ -1,16 +1,60 @@
 {
-	"name": "dataflow1",
+	"name": "df_bronze_to_silver_spl_certificados_medicos",
 	"properties": {
 		"folder": {
 			"name": "silver"
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_spl_certificados_medicos",
+						"type": "DatasetReference"
+					},
+					"name": "sourceCertificadosMedicos"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_spl_certificados_medicos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          certificado_id as string,",
+				"          afiliacion_id as string,",
+				"          fecha_emision as string,",
+				"          semana_gestacion as string,",
+				"          fecha_probable_parto as string,",
+				"          medico_responsable as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceCertificadosMedicos",
+				"sourceCertificadosMedicos derive(certificado_id = toInteger(certificado_id),",
+				"          afiliacion_id = toInteger(afiliacion_id),",
+				"          fecha_emision = toDate(fecha_emision, 'yyyy-MM-dd'),",
+				"          semana_gestacion = iif(isNull(semana_gestacion) || semana_gestacion == '', toInteger(null()), toInteger(semana_gestacion)),",
+				"          fecha_probable_parto = iif(isNull(fecha_probable_parto) || fecha_probable_parto == '', toDate(null()), toDate(fecha_probable_parto, 'yyyy-MM-dd')),",
+				"          medico_responsable = trim(medico_responsable),",
+				"          estado = upper(trim(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['spl_certificados_medicos.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
 			]
 		}
 	}
