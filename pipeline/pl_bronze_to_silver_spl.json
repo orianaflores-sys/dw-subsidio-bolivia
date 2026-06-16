@@ -184,7 +184,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_bronze_to_silver_entregas_supermercado",
+						"referenceName": "df_bronze_to_silver_spl_entregas_supermercado",
 						"type": "DataFlowReference"
 					},
 					"compute": {
