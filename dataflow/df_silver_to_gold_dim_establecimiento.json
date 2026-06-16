@@ -1,0 +1,57 @@
+{
+	"name": "df_silver_to_gold_dim_establecimiento",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_bja_establecimientos_salud",
+						"type": "DatasetReference"
+					},
+					"name": "sourceBjaEst"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_sup_establecimientos",
+						"type": "DatasetReference"
+					},
+					"name": "sourceSupEst"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          establecimiento_id as short,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceBjaEst",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceSupEst",
+				"sourceBjaEst derive(sistema_origen = 'BJA') ~> derivedColumn1",
+				"sourceSupEst derive(sistema_origen = 'SUP') ~> derivedColumn2"
+			]
+		}
+	}
+}
