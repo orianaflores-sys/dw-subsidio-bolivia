@@ -14,7 +14,7 @@
 			"location": {
 				"type": "AzureBlobStorageLocation",
 				"fileName": "as_vehiculos.csv",
-				"folderPath": "as ",
+				"folderPath": "as",
 				"container": "silver"
 			},
 			"columnDelimiter": ",",
