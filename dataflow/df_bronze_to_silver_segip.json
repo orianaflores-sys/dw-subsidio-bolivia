@@ -63,8 +63,10 @@
 				"          departamento_ci = case(right(ci,2)=='LP','LA PAZ',right(ci,2)=='CB','COCHABAMBA',right(ci,2)=='SC','SANTA CRUZ',right(ci,2)=='OR','ORURO',right(ci,2)=='PT','POTOSI',right(ci,2)=='TJ','TARIJA',right(ci,2)=='CH','CHUQUISACA',right(ci,2)=='BN','BENI',right(ci,2)=='PD','PANDO','DESCONOCIDO')) ~> derivedColumn1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     partitionFileNames:['segip.csv'],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink1"
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
 			]
 		}
 	}
