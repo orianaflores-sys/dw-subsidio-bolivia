@@ -1,0 +1,71 @@
+{
+	"name": "df_bronze_to_silver_as_despachos",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_as_despachos",
+						"type": "DatasetReference"
+					},
+					"name": "sourceDespachos"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_as_despachos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          despacho_id as string,",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as string,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_despacho as string,",
+				"          cantidad_despachada as string,",
+				"          centro_destino as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_despacho as string,",
+				"          fecha_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceDespachos",
+				"sourceDespachos derive(despacho_id = toInteger(despacho_id),",
+				"          recepcion_id = toInteger(recepcion_id),",
+				"          nro_lote = trim(nro_lote),",
+				"          almacen_id = toInteger(almacen_id),",
+				"          transportista_id = toInteger(transportista_id),",
+				"          vehiculo_id = toInteger(vehiculo_id),",
+				"          fecha_despacho = coalesce(     toDate(fecha_despacho,'yyyy-MM-dd'),     toDate(fecha_despacho,'dd-MM-yyyy'),     toDate(fecha_despacho,'MM/dd/yyyy'),     toDate(fecha_despacho,'dd/MM/yyyy') ),",
+				"          cantidad_despachada = toInteger(cantidad_despachada),",
+				"          centro_destino = trim(centro_destino),",
+				"          estado = case(upper(trim(estado)) == 'DEESPACHADO', 'DESPACHADO', upper(trim(estado))),",
+				"          responsable = trim(responsable),",
+				"          nro_guia_despacho = trim(nro_guia_despacho),",
+				"          fecha_llegada = toDate(toString(fecha_llegada), \"yyyy-MM-dd\")) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}

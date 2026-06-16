@@ -1,5 +1,5 @@
 {
-	"name": "ds_csv_silver_segip",
+	"name": "ds_csv_silver_as_despachos",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_blob_subsidio",
@@ -13,8 +13,8 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"fileName": "segip.csv",
-				"folderPath": "segip",
+				"fileName": "as_despachos.csv",
+				"folderPath": "as",
 				"container": "silver"
 			},
 			"columnDelimiter": ",",

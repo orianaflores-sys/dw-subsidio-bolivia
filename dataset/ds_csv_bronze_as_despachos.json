@@ -1,5 +1,5 @@
 {
-	"name": "ds_csv_bronze_as_transportistas",
+	"name": "ds_csv_bronze_as_despachos",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_blob_subsidio",
@@ -13,7 +13,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"fileName": "as_transportistas.csv",
+				"fileName": "as_despachos.csv",
 				"folderPath": "as",
 				"container": "bronze"
 			},
@@ -24,31 +24,55 @@
 		},
 		"schema": [
 			{
+				"name": "despacho_id",
+				"type": "String"
+			},
+			{
+				"name": "recepcion_id",
+				"type": "String"
+			},
+			{
+				"name": "nro_lote",
+				"type": "String"
+			},
+			{
+				"name": "almacen_id",
+				"type": "String"
+			},
+			{
 				"name": "transportista_id",
 				"type": "String"
 			},
 			{
-				"name": "razon_social",
+				"name": "vehiculo_id",
 				"type": "String"
 			},
 			{
-				"name": "nit",
+				"name": "fecha_despacho",
 				"type": "String"
 			},
 			{
-				"name": "municipio",
+				"name": "cantidad_despachada",
 				"type": "String"
 			},
 			{
-				"name": "contacto",
-				"type": "String"
-			},
-			{
-				"name": "telefono",
+				"name": "centro_destino",
 				"type": "String"
 			},
 			{
 				"name": "estado",
+				"type": "String"
+			},
+			{
+				"name": "responsable",
+				"type": "String"
+			},
+			{
+				"name": "nro_guia_despacho",
+				"type": "String"
+			},
+			{
+				"name": "fecha_llegada",
 				"type": "String"
 			}
 		]

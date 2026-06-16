@@ -5,6 +5,9 @@
 			"referenceName": "ls_blob_subsidio",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "silver"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
