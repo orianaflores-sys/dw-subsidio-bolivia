@@ -64,7 +64,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_bronze_to_silver_controles_prenatales",
+						"referenceName": "df_bronze_to_silver_bja_controles_prenatales",
 						"type": "DataFlowReference"
 					},
 					"compute": {
