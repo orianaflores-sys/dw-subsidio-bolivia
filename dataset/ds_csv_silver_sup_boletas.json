@@ -1,0 +1,27 @@
+{
+	"name": "ds_csv_silver_sup_boletas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "sup_boletas.csv",
+				"folderPath": "sup",
+				"container": "silver"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

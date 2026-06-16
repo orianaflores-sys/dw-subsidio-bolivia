@@ -1,0 +1,64 @@
+{
+	"name": "df_bronze_to_silver_sup_boletas",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_sup_boletas",
+						"type": "DatasetReference"
+					},
+					"name": "sourceBoletas"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_sup_boletas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          boleta_id as string,",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          nro_boleta as string,",
+				"          fecha_emision as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceBoletas",
+				"sourceBoletas derive(boleta_id = toInteger(boleta_id),",
+				"          control_id = toInteger(control_id),",
+				"          ci_beneficiaria = replace(trim(ci_beneficiaria), '-', ''),",
+				"          nro_boleta = trim(nro_boleta),",
+				"          fecha_emision = coalesce(\r",
+				"    toDate(fecha_emision,'yyyy-MM-dd'),\r",
+				"    toDate(fecha_emision,'dd-MM-yyyy'),\r",
+				"    toDate(fecha_emision,'MM/dd/yyyy'),\r",
+				"    toDate(fecha_emision,'dd/MM/yyyy')\r",
+				"),",
+				"          estado = upper(trim(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['sup_boletas.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
