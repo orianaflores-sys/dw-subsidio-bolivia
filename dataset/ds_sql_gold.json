@@ -1,0 +1,28 @@
+{
+	"name": "ds_sql_gold",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"esquema": {
+				"type": "string",
+				"defaultValue": "gold"
+			},
+			"tabla": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "@dataset().esquema",
+			"table": "@dataset().tabla"
+		}
+	}
+}
