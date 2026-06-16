@@ -1,0 +1,77 @@
+{
+	"name": "ds_csv_bronze_as_recepciones",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "as_recepciones.csv",
+				"folderPath": "as",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "recepcion_id",
+				"type": "String"
+			},
+			{
+				"name": "nro_lote",
+				"type": "String"
+			},
+			{
+				"name": "almacen_id",
+				"type": "String"
+			},
+			{
+				"name": "transportista_id",
+				"type": "String"
+			},
+			{
+				"name": "vehiculo_id",
+				"type": "String"
+			},
+			{
+				"name": "fecha_recepcion",
+				"type": "String"
+			},
+			{
+				"name": "cantidad_recibida",
+				"type": "String"
+			},
+			{
+				"name": "unidad",
+				"type": "String"
+			},
+			{
+				"name": "condicion",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			},
+			{
+				"name": "responsable",
+				"type": "String"
+			},
+			{
+				"name": "nro_guia_remision",
+				"type": "String"
+			},
+			{
+				"name": "temperatura_llegada",
+				"type": "String"
+			}
+		]
+	}
+}
