@@ -1,0 +1,109 @@
+{
+	"name": "df_silver_to_gold_dim_persona",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_segip",
+						"type": "DatasetReference"
+					},
+					"name": "sourceSegip"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ci as string,",
+				"          nombres as string,",
+				"          apellido_paterno as string,",
+				"          apellido_materno as string,",
+				"          fecha_nacimiento as date,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          ci_conyuge as string,",
+				"          numero_hijos as short,",
+				"          ci_padre as string,",
+				"          ci_madre as string,",
+				"          profesion as string,",
+				"          nivel_estudios as string,",
+				"          municipio_residencia as string,",
+				"          fecha_emision as date,",
+				"          departamento_ci as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceSegip",
+				"sourceSegip derive(apellidos = concat(coalesce(apellido_paterno,''),' ',coalesce(apellido_materno,'')),",
+				"          edad = year(currentDate()) - year(fecha_nacimiento),",
+				"          grupo_edad = case((year(currentDate()) - year(fecha_nacimiento)) < 18, 'Menor de 18', (year(currentDate()) - year(fecha_nacimiento)) <= 25, '18-25', (year(currentDate()) - year(fecha_nacimiento)) <= 35, '26-35', (year(currentDate()) - year(fecha_nacimiento)) <= 50, '36-50', 'Mayor de 50'),",
+				"          departamento = case(right(ci,2)=='LP','LA PAZ',right(ci,2)=='CB','COCHABAMBA',right(ci,2)=='SC','SANTA CRUZ',right(ci,2)=='OR','ORURO',right(ci,2)=='PT','POTOSI',right(ci,2)=='TJ','TARIJA',right(ci,2)=='CH','CHUQUISACA',right(ci,2)=='BN','BENI',right(ci,2)=='PD','PANDO','DESCONOCIDO'),",
+				"          departamento_ci = right(ci,2),",
+				"          municipio = trim(municipio_residencia)) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          ci,",
+				"          nombres,",
+				"          apellidos,",
+				"          fecha_nacimiento,",
+				"          edad,",
+				"          grupo_edad,",
+				"          genero,",
+				"          estado_civil,",
+				"          profesion,",
+				"          nivel_estudios,",
+				"          municipio,",
+				"          departamento,",
+				"          departamento_ci",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ci,",
+				"          nombres,",
+				"          apellidos,",
+				"          fecha_nacimiento,",
+				"          edad,",
+				"          grupo_edad,",
+				"          genero,",
+				"          estado_civil,",
+				"          profesion,",
+				"          nivel_estudios,",
+				"          municipio,",
+				"          departamento,",
+				"          departamento_ci",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
