@@ -1,0 +1,63 @@
+{
+	"name": "df_bronze_to_silver_spl_asignaciones_mensuales",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_spl_asignaciones_mensuales",
+						"type": "DatasetReference"
+					},
+					"name": "sourceAsignacionesMensuales"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_spl_asignaciones_mensuales",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          asignacion_id as string,",
+				"          afiliacion_id as string,",
+				"          mes as string,",
+				"          gestion as string,",
+				"          monto_bs as string,",
+				"          monto_productos as string,",
+				"          monto_carnes as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceAsignacionesMensuales",
+				"sourceAsignacionesMensuales derive(asignacion_id = toInteger(asignacion_id),",
+				"          afiliacion_id = toInteger(afiliacion_id),",
+				"          mes = toInteger(mes),",
+				"          gestion = toInteger(gestion),",
+				"          monto_bs = toDecimal(monto_bs),",
+				"          monto_productos = toDecimal(monto_productos),",
+				"          monto_carnes = toDecimal(monto_carnes),",
+				"          estado = upper(trim(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['spl_asignaciones_mensuales.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
