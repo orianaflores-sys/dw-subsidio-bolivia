@@ -1,0 +1,38 @@
+{
+	"name": "pl_silver_to_gold_dim",
+	"properties": {
+		"activities": [
+			{
+				"name": "df_dim_persona",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_silver_to_gold_dim_persona",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"sink1": {
+								"esquema": "gold",
+								"tabla": "dim_persona"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
