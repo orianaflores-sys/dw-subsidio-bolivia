@@ -15,10 +15,21 @@
 					"name": "sourceSupermercados"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_spl_supermercados",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
 				}
 			],
 			"scriptLines": [
@@ -37,8 +48,24 @@
 				"          Cadena = trim(Cadena),",
 				"          Sucursal = trim(Sucursal),",
 				"          Municipio = trim(Municipio),",
-				"          {Dirección} = ERROR_FUNCTION(''),",
-				"          columna6 = ERROR_FUNCTION('')) ~> derivedColumn1"
+				"          Estado = upper(trim(Estado)),",
+				"          {Dirección} = trim({Dirección})) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          id_supermercado = ID,",
+				"          cadena = Cadena,",
+				"          sucursal = Sucursal,",
+				"          municipio = Municipio,",
+				"          {dirección} = {Dirección},",
+				"          estado = Estado",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['spl_supermercados.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
 			]
 		}
 	}
