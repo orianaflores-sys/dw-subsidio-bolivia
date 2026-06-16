@@ -1,0 +1,81 @@
+{
+	"name": "df_bronze_to_silver_bja_partos",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_bja_partos",
+						"type": "DatasetReference"
+					},
+					"name": "sourcePartos"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_bja_partos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          parto_id as string,",
+				"          ci_madre as string,",
+				"          ci_recien_nacido as string,",
+				"          establecimiento_id as string,",
+				"          fecha_parto as string,",
+				"          tipo_parto as string,",
+				"          peso_nacimiento_kg as string,",
+				"          talla_nacimiento_cm as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourcePartos",
+				"sourcePartos derive(parto_id = toInteger(parto_id),",
+				"          ci_madre = trim(ci_madre),",
+				"          ci_recien_nacido = trim(ci_recien_nacido),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          fecha_parto = coalesce(     toDate(fecha_parto,'yyyy-MM-dd'),     toDate(fecha_parto,'dd-MM-yyyy'),     toDate(fecha_parto,'MM/dd/yyyy'),     toDate(fecha_parto,'dd/MM/yyyy') ),",
+				"          tipo_parto = iif(\r",
+				"    upper(trim(tipo_parto)) == 'CESÁREA' ||\r",
+				"    upper(trim(tipo_parto)) == 'CESÁRAE' ||\r",
+				"    upper(trim(tipo_parto)) == 'CESÁRREA' ||\r",
+				"    upper(trim(tipo_parto)) == 'CEÁREA' ||\r",
+				"    upper(trim(tipo_parto)) == 'CESSÁREA',\r",
+				"    'CESÁREA',\r",
+				"\r",
+				"    iif(\r",
+				"        upper(trim(tipo_parto)) == 'NATURAL' ||\r",
+				"        upper(trim(tipo_parto)) == 'NAUTRAL' ||\r",
+				"        upper(trim(tipo_parto)) == 'NATURL' ||\r",
+				"        upper(trim(tipo_parto)) == 'NTURAL' ||\r",
+				"        upper(trim(tipo_parto)) == 'NATTURAL',\r",
+				"        'NATURAL',\r",
+				"\r",
+				"        'NO ESPECIFICADO'\r",
+				"    )\r",
+				"),",
+				"          peso_nacimiento_kg = toDecimal(peso_nacimiento_kg),",
+				"          talla_nacimiento_cm = toDecimal(talla_nacimiento_cm)) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['bja_partos.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}

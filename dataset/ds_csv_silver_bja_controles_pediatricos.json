@@ -1,0 +1,27 @@
+{
+	"name": "ds_csv_silver_bja_controles_pediatricos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "bja_controles_pediatricos.csv",
+				"folderPath": "bja",
+				"container": "silver"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

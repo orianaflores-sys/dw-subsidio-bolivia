@@ -15,8 +15,20 @@
 					"name": "sourceControlesPrenatales"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_bja_controles_prenatales",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          control_prenatal_id as string,",
@@ -31,7 +43,22 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> sourceControlesPrenatales"
+				"     ignoreNoFilesFound: false) ~> sourceControlesPrenatales",
+				"sourceControlesPrenatales derive(control_prenatal_id = toInteger(control_prenatal_id),",
+				"          ci_beneficiaria = trim(ci_beneficiaria),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          nro_control = toInteger(nro_control),",
+				"          semana_gestacion = toInteger(semana_gestacion),",
+				"          peso_madre_kg = toDecimal(peso_madre_kg),",
+				"          fecha_control = coalesce(     toDate(fecha_control,'yyyy-MM-dd'),     toDate(fecha_control,'dd-MM-yyyy'),     toDate(fecha_control,'MM/dd/yyyy'),     toDate(fecha_control,'dd/MM/yyyy') ),",
+				"          presion_arterial = trim(presion_arterial),",
+				"          resultado = upper(trim(resultado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['bja_controles_prenatales.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
 			]
 		}
 	}

@@ -1,0 +1,72 @@
+{
+	"name": "df_bronze_to_silver_bja_controles_pediatricos",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "sourceControlesPediatricos"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          control_pediatrico_id as string,",
+				"          ci_nino as string,",
+				"          ci_madre as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          peso_nino_kg as string,",
+				"          talla_nino_cm as string,",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceControlesPediatricos",
+				"sourceControlesPediatricos derive(control_pediatrico_id = toInteger(control_pediatrico_id),",
+				"          ci_nino = trim(ci_nino),",
+				"          ci_madre = trim(ci_madre),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          nro_control = toInteger(nro_control),",
+				"          fecha_control = coalesce(\r",
+				"    toDate(fecha_control,'yyyy-MM-dd'),\r",
+				"    toDate(fecha_control,'dd-MM-yyyy'),\r",
+				"    toDate(fecha_control,'MM/dd/yyyy'),\r",
+				"    toDate(fecha_control,'dd/MM/yyyy')\r",
+				"),",
+				"          peso_nino_kg = toDecimal(peso_nino_kg),",
+				"          talla_nino_cm = toDecimal(talla_nino_cm),",
+				"          vacuna_aplicada = trim(vacuna_aplicada),",
+				"          resultado = upper(trim(resultado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['bja_controles_pediatricos.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
