@@ -1,0 +1,84 @@
+{
+	"name": "df_bronze_to_silver_bja_pagos",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "sourcePagos"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          pago_id as string,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as string,",
+				"          fecha_pago as string,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourcePagos",
+				"sourcePagos derive(pago_id = toInteger(pago_id),",
+				"          ci_beneficiaria = trim(ci_beneficiaria),",
+				"          concepto_pago = upper(trim(concepto_pago)),",
+				"          monto_bs = toDecimal(monto_bs),",
+				"          fecha_pago = coalesce(\r",
+				"    toDate(fecha_pago,'yyyy-MM-dd'),\r",
+				"    toDate(fecha_pago,'dd-MM-yyyy'),\r",
+				"    toDate(fecha_pago,'MM/dd/yyyy'),\r",
+				"    toDate(fecha_pago,'dd/MM/yyyy')\r",
+				"),",
+				"          estado_pago = upper(trim(estado_pago)),",
+				"          canal_pago = iif(\r",
+				"    upper(trim(canal_pago)) == 'PGO MÓVIL' ||\r",
+				"    upper(trim(canal_pago)) == 'PAGO MÓVIL',\r",
+				"    'PAGO MÓVIL',\r",
+				"\r",
+				"    iif(\r",
+				"        upper(trim(canal_pago)) == 'BANCO UNIN' ||\r",
+				"        upper(trim(canal_pago)) == 'BANCO UNIÓN',\r",
+				"        'BANCO UNIÓN',\r",
+				"\r",
+				"        iif(\r",
+				"            upper(trim(canal_pago)) == 'TRANSFERENCIA BANCARIA',\r",
+				"            'TRANSFERENCIA BANCARIA',\r",
+				"            upper(trim(canal_pago))\r",
+				"        )\r",
+				"    )\r",
+				"),",
+				"          nro_comprobante = trim(nro_comprobante)) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['bja_pagos.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
