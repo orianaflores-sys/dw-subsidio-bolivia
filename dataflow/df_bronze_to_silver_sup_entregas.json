@@ -1,0 +1,81 @@
+{
+	"name": "df_bronze_to_silver_sup_entregas",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "sourceEntregas"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          entrega_id as string,",
+				"          boleta_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          paquete_id as string,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as string,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as string,",
+				"          fecha_proxima_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceEntregas",
+				"sourceEntregas derive(entrega_id = toInteger(entrega_id),",
+				"          boleta_id = toInteger(boleta_id),",
+				"          ci_beneficiaria = replace(trim(ci_beneficiaria), '-', ''),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          paquete_id = toInteger(paquete_id),",
+				"          paquete_nombre = trim(paquete_nombre),",
+				"          fecha_entrega = coalesce(\r",
+				"    toDate(fecha_entrega,'yyyy-MM-dd'),\r",
+				"    toDate(fecha_entrega,'dd-MM-yyyy'),\r",
+				"    toDate(fecha_entrega,'MM/dd/yyyy'),\r",
+				"    toDate(fecha_entrega,'dd/MM/yyyy')\r",
+				"),",
+				"          lote_produccion = iif(isNull(lote_produccion) || lote_produccion == '', toString(null()), trim(lote_produccion)),",
+				"          peso_paquete_kg = toDecimal(peso_paquete_kg),",
+				"          fecha_proxima_entrega = iif(\r",
+				"    isNull(fecha_proxima_entrega) || trim(toString(fecha_proxima_entrega)) == '',\r",
+				"    toDate(null()),\r",
+				"    coalesce(\r",
+				"        toDate(toString(fecha_proxima_entrega),'yyyy-MM-dd'),\r",
+				"        toDate(toString(fecha_proxima_entrega),'dd-MM-yyyy'),\r",
+				"        toDate(toString(fecha_proxima_entrega),'MM/dd/yyyy'),\r",
+				"        toDate(toString(fecha_proxima_entrega),'dd/MM/yyyy')\r",
+				"    )\r",
+				")) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['sup_entregas.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
