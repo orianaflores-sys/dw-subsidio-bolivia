@@ -1,0 +1,63 @@
+{
+	"name": "df_bronze_to_silver_spl_afiliaciones",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_spl_afiliaciones",
+						"type": "DatasetReference"
+					},
+					"name": "sourceAfiliaciones"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_spl_afiliaciones",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          afiliacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          empleador_id as string,",
+				"          caja_id as string,",
+				"          fecha_afiliacion as string,",
+				"          nro_matricula as string,",
+				"          tipo_subsidio as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceAfiliaciones",
+				"sourceAfiliaciones derive(afiliacion_id = toInteger(afiliacion_id),",
+				"          ci_beneficiaria = replace(trim(ci_beneficiaria), '-', ''),",
+				"          empleador_id = replace(trim(ci_beneficiaria), '-', ''),",
+				"          caja_id = toInteger(caja_id),",
+				"          fecha_afiliacion = toDate(fecha_afiliacion, 'yyyy-MM-dd'),",
+				"          nro_matricula = trim(nro_matricula),",
+				"          tipo_subsidio = upper(trim(tipo_subsidio)),",
+				"          estado = upper(trim(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['spl_afiliaciones.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}

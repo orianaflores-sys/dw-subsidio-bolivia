@@ -1,0 +1,60 @@
+{
+	"name": "ds_csv_bronze_spl_afiliaciones",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "spl_afiliaciones.csv",
+				"folderPath": "spl",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "afiliacion_id",
+				"type": "String"
+			},
+			{
+				"name": "ci_beneficiaria",
+				"type": "String"
+			},
+			{
+				"name": "empleador_id",
+				"type": "String"
+			},
+			{
+				"name": "caja_id",
+				"type": "String"
+			},
+			{
+				"name": "fecha_afiliacion",
+				"type": "String"
+			},
+			{
+				"name": "nro_matricula",
+				"type": "String"
+			},
+			{
+				"name": "tipo_subsidio",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			}
+		]
+	}
+}
