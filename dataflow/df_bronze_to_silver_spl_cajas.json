@@ -1,0 +1,69 @@
+{
+	"name": "df_bronze_to_silver_spl_cajas",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_spl_cajas",
+						"type": "DatasetReference"
+					},
+					"name": "sourceCajas"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_spl_cajas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID as string,",
+				"          Nombre as string,",
+				"          Sigla as string,",
+				"          Tipo as string,",
+				"          Estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceCajas",
+				"sourceCajas derive(ID = toInteger(ID),",
+				"          Nombre = trim(Nombre),",
+				"          Sigla = upper(trim(Sigla)),",
+				"          Tipo = upper(trim(Tipo)),",
+				"          Estado = upper(trim(Estado))) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          id_caja = ID,",
+				"          nombre = Nombre,",
+				"          sigla = Sigla,",
+				"          tipo = Tipo,",
+				"          estado = Estado",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['spl_cajas.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
