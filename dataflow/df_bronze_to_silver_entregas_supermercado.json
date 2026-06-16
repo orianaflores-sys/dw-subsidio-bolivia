@@ -1,0 +1,63 @@
+{
+	"name": "df_bronze_to_silver_entregas_supermercado",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_spl_entregas_supermercado",
+						"type": "DatasetReference"
+					},
+					"name": "sourceEntregasSupermercado"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_spl_entregas_supermercado",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          entrega_super_id as string,",
+				"          asignacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          supermercado_id as string,",
+				"          fecha_retiro as string,",
+				"          tipo_carne as string,",
+				"          cantidad_kg as string,",
+				"          monto_bs as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceEntregasSupermercado",
+				"sourceEntregasSupermercado derive(entrega_super_id = toInteger(entrega_super_id),",
+				"          asignacion_id = toInteger(asignacion_id),",
+				"          ci_beneficiaria = replace(trim(ci_beneficiaria), '-', ''),",
+				"          supermercado_id = toInteger(supermercado_id),",
+				"          fecha_retiro = coalesce(     toDate(fecha_retiro,'yyyy-MM-dd'),     toDate(fecha_retiro,'dd-MM-yyyy'),     toDate(fecha_retiro,'MM/dd/yyyy'),     toDate(fecha_retiro,'dd/MM/yyyy') ),",
+				"          tipo_carne = iif(     isNull(tipo_carne) || trim(toString(tipo_carne)) == \"\",     \"NO ESPECIFICADO\",  iif(     upper(trim(toString(tipo_carne))) == \"PLOLO\" || upper(trim(toString(tipo_carne))) == \"POLLLO\" || upper(trim(toString(tipo_carne))) == \"POLLO\",     \"POLLO\",  iif(     upper(trim(toString(tipo_carne))) == \"VAACA\" || upper(trim(toString(tipo_carne))) == \"VAA\" || upper(trim(toString(tipo_carne))) == \"VACA\",     \"VACA\",  iif(     upper(trim(toString(tipo_carne))) == \"CERO\" || upper(trim(toString(tipo_carne))) == \"CERDO\",     \"CERDO\",  iif(     upper(trim(toString(tipo_carne))) == \"PESCADO\",     \"PESCADO\",  upper(trim(toString(tipo_carne))) ))))),",
+				"          cantidad_kg = toDecimal(cantidad_kg),",
+				"          monto_bs = toDecimal(monto_bs)) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['spl_entregas_supermercado.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
