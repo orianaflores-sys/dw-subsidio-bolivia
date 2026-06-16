@@ -1,0 +1,65 @@
+{
+	"name": "df_bronze_to_silver_sup_establecimientos",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_sup_establecimientos",
+						"type": "DatasetReference"
+					},
+					"name": "sourceEstablecimientos"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_sup_establecimientos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          establecimiento_id as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceEstablecimientos",
+				"sourceEstablecimientos derive(establecimiento_id = toInteger(establecimiento_id),",
+				"          codigo_snis = trim(codigo_snis),",
+				"          nombre = trim(nombre),",
+				"          tipo = upper(trim(tipo)),",
+				"          nivel_atencion = trim(nivel_atencion),",
+				"          municipio = trim(municipio),",
+				"          departamento = case(upper(trim(departamento))=='LP','LA PAZ',upper(trim(departamento))=='CB','COCHABAMBA',upper(trim(departamento))=='SC','SANTA CRUZ',upper(trim(departamento))=='OR','ORURO',upper(trim(departamento))=='PT','POTOSI',upper(trim(departamento))=='TJ','TARIJA',upper(trim(departamento))=='CH','CHUQUISACA',upper(trim(departamento))=='BN','BENI',upper(trim(departamento))=='PD','PANDO',upper(trim(departamento))),",
+				"          red_salud = trim(red_salud),",
+				"          estado = upper(trim(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['sup_establecimientos.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
