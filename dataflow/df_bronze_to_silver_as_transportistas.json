@@ -1,0 +1,59 @@
+{
+	"name": "df_bronze_to_silver_as_transportistas",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_as_transportistas",
+						"type": "DatasetReference"
+					},
+					"name": "sourceTransportistas"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_as_transportistas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          transportista_id as string,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          contacto as string,",
+				"          telefono as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceTransportistas",
+				"sourceTransportistas derive(transportista_id = toInteger(transportista_id),",
+				"          razon_social = trim(razon_social),",
+				"          nit = trim(nit),",
+				"          municipio = trim(municipio),",
+				"          contacto = trim(contacto),",
+				"          telefono = trim(telefono),",
+				"          estado = upper(trim(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}

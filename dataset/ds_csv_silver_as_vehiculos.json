@@ -1,0 +1,24 @@
+{
+	"name": "ds_csv_silver_as_vehiculos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "as_vehiculos.csv",
+				"folderPath": "as ",
+				"container": "silver"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

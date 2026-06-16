@@ -1,0 +1,53 @@
+{
+	"name": "ds_csv_bronze_as_vehiculos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "as_vehiculos.csv",
+				"folderPath": "as",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "vehiculo_id",
+				"type": "String"
+			},
+			{
+				"name": "transportista_id",
+				"type": "String"
+			},
+			{
+				"name": "descripcion",
+				"type": "String"
+			},
+			{
+				"name": "placa",
+				"type": "String"
+			},
+			{
+				"name": "tipo",
+				"type": "String"
+			},
+			{
+				"name": "capacidad_kg",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			}
+		]
+	}
+}
