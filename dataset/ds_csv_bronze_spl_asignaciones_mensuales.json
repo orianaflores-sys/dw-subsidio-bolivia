@@ -1,0 +1,60 @@
+{
+	"name": "ds_csv_bronze_spl_asignaciones_mensuales",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "spl_asignaciones_mensuales.csv",
+				"folderPath": "spl",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "asignacion_id",
+				"type": "String"
+			},
+			{
+				"name": "afiliacion_id",
+				"type": "String"
+			},
+			{
+				"name": "mes",
+				"type": "String"
+			},
+			{
+				"name": "gestion",
+				"type": "String"
+			},
+			{
+				"name": "monto_bs",
+				"type": "String"
+			},
+			{
+				"name": "monto_productos",
+				"type": "String"
+			},
+			{
+				"name": "monto_carnes",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			}
+		]
+	}
+}
