@@ -61,6 +61,66 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "df_dim_empleador",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_silver_to_gold_dim_empleador",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"sink1": {
+								"esquema": "gold",
+								"tabla": "dim_empleador"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "df_dim_caja_salud",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_silver_to_gold_dim_caja_salud",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"sink1": {
+								"esquema": "gold",
+								"tabla": "dim_caja_salud"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
 			}
 		],
 		"annotations": []

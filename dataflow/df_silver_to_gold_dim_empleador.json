@@ -1,0 +1,80 @@
+{
+	"name": "df_silver_to_gold_dim_empleador",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_spl_empleadores",
+						"type": "DatasetReference"
+					},
+					"name": "sourceEmpleadores"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empleador_id as short,",
+				"          nit as integer,",
+				"          razon_social as string,",
+				"          tipo as string,",
+				"          nro_patronal as string,",
+				"          municipio as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceEmpleadores",
+				"sourceEmpleadores derive(departamento = case(upper(municipio) == 'LA PAZ' || upper(municipio) == 'EL ALTO' || upper(municipio) == 'VIACHA' || upper(municipio) == 'ACHACACHI' || upper(municipio) == 'COPACABANA' || upper(municipio) == 'PATACAMAYA', 'LA PAZ', upper(municipio) == 'COCHABAMBA' || upper(municipio) == 'QUILLACOLLO' || upper(municipio) == 'SIPE SIPE', 'COCHABAMBA', upper(municipio) == 'SANTA CRUZ DE LA SIERRA' || upper(municipio) == 'MONTERO' || upper(municipio) == 'WARNES', 'SANTA CRUZ', upper(municipio) == 'TARIJA' || upper(municipio) == 'YACUIBA', 'TARIJA', upper(municipio) == 'ORURO', 'ORURO', upper(municipio) == 'POTOSI' || upper(municipio) == 'LLALLAGUA', 'POTOSI', upper(municipio) == 'SUCRE' || upper(municipio) == 'MONTEAGUDO', 'CHUQUISACA', upper(municipio) == 'TRINIDAD' || upper(municipio) == 'RIBERALTA', 'BENI', upper(municipio) == 'COBIJA' || upper(municipio) == 'PORVENIR', 'PANDO', 'DESCONOCIDO')) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          empleador_id,",
+				"          nit,",
+				"          razon_social,",
+				"          tipo,",
+				"          municipio,",
+				"          departamento",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          empleador_id,",
+				"          nit,",
+				"          razon_social,",
+				"          tipo,",
+				"          municipio,",
+				"          departamento",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
