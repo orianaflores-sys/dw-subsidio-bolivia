@@ -5666,6 +5666,55 @@
 				"[concat(variables('factoryId'), '/datasets/ds_csv_silver_segip')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sql_gold')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_silver_to_gold_dim')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "df_dim_persona",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_silver_to_gold_dim_persona",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceSegip": {},
+									"sink1": {
+										"esquema": "gold",
+										"tabla": "dim_persona"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_persona')]"
+			]
 		}
 	]
 }
