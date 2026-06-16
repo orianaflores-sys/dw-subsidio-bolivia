@@ -1,5 +1,5 @@
 {
-	"name": "df_bronze_to_silver_entregas_supermercado",
+	"name": "df_bronze_to_silver_spl_entregas_supermercado",
 	"properties": {
 		"folder": {
 			"name": "silver"
