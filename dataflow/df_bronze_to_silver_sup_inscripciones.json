@@ -1,0 +1,59 @@
+{
+	"name": "df_bronze_to_silver_sup_inscripciones",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_bronze_sup_inscripciones",
+						"type": "DatasetReference"
+					},
+					"name": "sourceInscripciones"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_sup_inscripciones",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          inscripcion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          fecha_inscripcion as string,",
+				"          semana_gestacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceInscripciones",
+				"sourceInscripciones derive(inscripcion_id = toInteger(inscripcion_id),",
+				"          ci_beneficiaria = replace(trim(ci_beneficiaria), '-', ''),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          fecha_inscripcion = toDate(fecha_inscripcion, 'yyyy-MM-dd'),",
+				"          semana_gestacion = toInteger(semana_gestacion),",
+				"          estado = upper(trim(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['sup_inscripciones.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
