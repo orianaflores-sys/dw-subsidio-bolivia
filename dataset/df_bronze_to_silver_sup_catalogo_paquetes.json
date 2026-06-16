@@ -1,0 +1,27 @@
+{
+	"name": "df_bronze_to_silver_sup_catalogo_paquetes",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_blob_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "sup_catalogo-paquetes.csv",
+				"folderPath": "sup",
+				"container": "silver"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
