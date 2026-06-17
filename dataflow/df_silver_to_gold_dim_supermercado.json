@@ -1,0 +1,78 @@
+{
+	"name": "df_silver_to_gold_dim_supermercado",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_spl_supermercados",
+						"type": "DatasetReference"
+					},
+					"name": "sourceSupermercados"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          id_supermercado as short,",
+				"          cadena as string,",
+				"          sucursal as string,",
+				"          municipio as string,",
+				"          {dirección} as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceSupermercados",
+				"sourceSupermercados derive(departamento = case(upper(municipio) == 'LA PAZ' || upper(municipio) == 'EL ALTO' || upper(municipio) == 'VIACHA', 'LA PAZ', upper(municipio) == 'COCHABAMBA' || upper(municipio) == 'QUILLACOLLO', 'COCHABAMBA', upper(municipio) == 'SANTA CRUZ DE LA SIERRA' || upper(municipio) == 'MONTERO', 'SANTA CRUZ', upper(municipio) == 'TARIJA' || upper(municipio) == 'YACUIBA', 'TARIJA', upper(municipio) == 'ORURO', 'ORURO', upper(municipio) == 'POTOSI' || upper(municipio) == 'LLALLAGUA', 'POTOSI', upper(municipio) == 'SUCRE', 'CHUQUISACA', upper(municipio) == 'TRINIDAD', 'BENI', upper(municipio) == 'COBIJA', 'PANDO', 'DESCONOCIDO')) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          id_supermercado,",
+				"          cadena,",
+				"          sucursal,",
+				"          municipio,",
+				"          departamento",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          id_supermercado,",
+				"          cadena,",
+				"          sucursal,",
+				"          municipio,",
+				"          departamento",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
