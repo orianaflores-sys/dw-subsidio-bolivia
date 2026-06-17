@@ -1346,6 +1346,60 @@
 								"parameters": {}
 							}
 						]
+					},
+					{
+						"name": "copy_bja_pagos",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_csv_silver_bja_pagos",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sql_silver_bja_pagos",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -1365,7 +1419,8 @@
 				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_sup_entregas')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_spl_afiliaciones')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_spl_asignaciones_mensuales')]",
-				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_spl_entregas_agencia')]"
+				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_spl_entregas_agencia')]",
+				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_bja_pagos')]"
 			]
 		},
 		{
