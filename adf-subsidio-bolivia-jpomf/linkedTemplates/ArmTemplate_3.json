@@ -13,6 +13,53 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_sql_silver_bja_inscripciones')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_dw_subsidio",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "inscripcion_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "varchar"
+					},
+					{
+						"name": "establecimiento_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "fecha_inscripcion",
+						"type": "date"
+					},
+					{
+						"name": "semana_gestacion",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "estado",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "silver",
+					"table": "bja_inscripciones"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_silver_csv_to_sql')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -135,7 +182,7 @@
 						]
 					},
 					{
-						"name": "Copy data1",
+						"name": "copy_bja_controles_prenatales",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -147,8 +194,46 @@
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"enableStaging": false
-						}
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_csv_silver_bja_controles_prenatales",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sql_silver_bja_controles_prenatales",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
 				],
 				"policy": {
@@ -159,7 +244,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_bja_inscripciones')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_as_almacenes')]",
@@ -1525,72 +1612,6 @@
 						"derivedColumn2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     partitionFileNames:['spl_entregas_agencia.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_spl_entregas_supermercado')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "silver"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_bronze_spl_entregas_supermercado",
-								"type": "DatasetReference"
-							},
-							"name": "sourceEntregasSupermercado"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_spl_entregas_supermercado",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          entrega_super_id as string,",
-						"          asignacion_id as string,",
-						"          ci_beneficiaria as string,",
-						"          supermercado_id as string,",
-						"          fecha_retiro as string,",
-						"          tipo_carne as string,",
-						"          cantidad_kg as string,",
-						"          monto_bs as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourceEntregasSupermercado",
-						"sourceEntregasSupermercado derive(entrega_super_id = toInteger(entrega_super_id),",
-						"          asignacion_id = toInteger(asignacion_id),",
-						"          ci_beneficiaria = replace(trim(ci_beneficiaria), '-', ''),",
-						"          supermercado_id = toInteger(supermercado_id),",
-						"          fecha_retiro = coalesce(     toDate(fecha_retiro,'yyyy-MM-dd'),     toDate(fecha_retiro,'dd-MM-yyyy'),     toDate(fecha_retiro,'MM/dd/yyyy'),     toDate(fecha_retiro,'dd/MM/yyyy') ),",
-						"          tipo_carne = iif(     isNull(tipo_carne) || trim(toString(tipo_carne)) == \"\",     \"NO ESPECIFICADO\",  iif(     upper(trim(toString(tipo_carne))) == \"PLOLO\" || upper(trim(toString(tipo_carne))) == \"POLLLO\" || upper(trim(toString(tipo_carne))) == \"POLLO\",     \"POLLO\",  iif(     upper(trim(toString(tipo_carne))) == \"VAACA\" || upper(trim(toString(tipo_carne))) == \"VAA\" || upper(trim(toString(tipo_carne))) == \"VACA\",     \"VACA\",  iif(     upper(trim(toString(tipo_carne))) == \"CERO\" || upper(trim(toString(tipo_carne))) == \"CERDO\",     \"CERDO\",  iif(     upper(trim(toString(tipo_carne))) == \"PESCADO\",     \"PESCADO\",  upper(trim(toString(tipo_carne))) ))))),",
-						"          cantidad_kg = toDecimal(cantidad_kg),",
-						"          monto_bs = toDecimal(monto_bs)) ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['spl_entregas_supermercado.csv'],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     partitionBy('hash', 1)) ~> sink1"

@@ -13,6 +13,72 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_spl_entregas_supermercado')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "silver"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_bronze_spl_entregas_supermercado",
+								"type": "DatasetReference"
+							},
+							"name": "sourceEntregasSupermercado"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_spl_entregas_supermercado",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          entrega_super_id as string,",
+						"          asignacion_id as string,",
+						"          ci_beneficiaria as string,",
+						"          supermercado_id as string,",
+						"          fecha_retiro as string,",
+						"          tipo_carne as string,",
+						"          cantidad_kg as string,",
+						"          monto_bs as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceEntregasSupermercado",
+						"sourceEntregasSupermercado derive(entrega_super_id = toInteger(entrega_super_id),",
+						"          asignacion_id = toInteger(asignacion_id),",
+						"          ci_beneficiaria = replace(trim(ci_beneficiaria), '-', ''),",
+						"          supermercado_id = toInteger(supermercado_id),",
+						"          fecha_retiro = coalesce(     toDate(fecha_retiro,'yyyy-MM-dd'),     toDate(fecha_retiro,'dd-MM-yyyy'),     toDate(fecha_retiro,'MM/dd/yyyy'),     toDate(fecha_retiro,'dd/MM/yyyy') ),",
+						"          tipo_carne = iif(     isNull(tipo_carne) || trim(toString(tipo_carne)) == \"\",     \"NO ESPECIFICADO\",  iif(     upper(trim(toString(tipo_carne))) == \"PLOLO\" || upper(trim(toString(tipo_carne))) == \"POLLLO\" || upper(trim(toString(tipo_carne))) == \"POLLO\",     \"POLLO\",  iif(     upper(trim(toString(tipo_carne))) == \"VAACA\" || upper(trim(toString(tipo_carne))) == \"VAA\" || upper(trim(toString(tipo_carne))) == \"VACA\",     \"VACA\",  iif(     upper(trim(toString(tipo_carne))) == \"CERO\" || upper(trim(toString(tipo_carne))) == \"CERDO\",     \"CERDO\",  iif(     upper(trim(toString(tipo_carne))) == \"PESCADO\",     \"PESCADO\",  upper(trim(toString(tipo_carne))) ))))),",
+						"          cantidad_kg = toDecimal(cantidad_kg),",
+						"          monto_bs = toDecimal(monto_bs)) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['spl_entregas_supermercado.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_spl_supermercados')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1756,7 +1822,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_spl_supermercados')]"
+				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_spl_supermercados')]",
+				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_spl_entregas_supermercado')]"
 			]
 		},
 		{
@@ -1958,260 +2025,6 @@
 				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_sup_controles')]",
 				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_sup_boletas')]",
 				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_sup_entregas')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_silver_to_gold_dim')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "df_dim_persona",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_silver_to_gold_dim_persona",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceSegip": {},
-									"sink1": {
-										"esquema": "gold",
-										"tabla": "dim_persona"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_dim_establecimiento",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_silver_to_gold_dim_establecimiento",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceBjaEst": {},
-									"sourceSupEst": {},
-									"sink1": {
-										"esquema": "gold",
-										"tabla": "dim_establecimiento"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_dim_empleador",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_silver_to_gold_dim_empleador",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceEmpleadores": {},
-									"sink1": {
-										"esquema": "gold",
-										"tabla": "dim_empleador"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_dim_caja_salud",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_silver_to_gold_dim_caja_salud",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceCajas": {},
-									"sink1": {
-										"esquema": "gold",
-										"tabla": "dim_caja_salud"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_dim_supermercado",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_silver_to_gold_dim_supermercado",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceSupermercados": {},
-									"sink1": {
-										"esquema": "gold",
-										"tabla": "dim_supermercado"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_dim_paquete",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_silver_to_gold_dim_paquete",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourcePaquetes": {},
-									"sink1": {
-										"esquema": "gold",
-										"tabla": "dim_paquete"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_punto_entrega",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_silver_to_gold_dim_punto_entrega",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceEntregasAg": {},
-									"sink1": {
-										"esquema": "gold",
-										"tabla": "dim_punto_entrega"
-									}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_persona')]",
-				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_establecimiento')]",
-				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_empleador')]",
-				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_caja_salud')]",
-				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_supermercado')]",
-				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_paquete')]",
-				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_punto_entrega')]"
 			]
 		}
 	]
