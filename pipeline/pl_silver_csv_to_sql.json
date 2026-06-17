@@ -111,12 +111,8 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "ds_sql_silver",
-						"type": "DatasetReference",
-						"parameters": {
-							"esquema": "silver",
-							"tabla": "bja_inscripciones"
-						}
+						"referenceName": "ds_sql_silver_bja_inscripciones",
+						"type": "DatasetReference"
 					}
 				]
 			}
