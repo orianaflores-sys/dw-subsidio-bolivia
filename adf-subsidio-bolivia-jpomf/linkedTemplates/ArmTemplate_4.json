@@ -308,7 +308,7 @@
 						"     ignoreNoFilesFound: false) ~> sourceAfiliaciones",
 						"sourceAfiliaciones derive(afiliacion_id = toInteger(afiliacion_id),",
 						"          ci_beneficiaria = replace(trim(ci_beneficiaria), '-', ''),",
-						"          empleador_id = replace(trim(ci_beneficiaria), '-', ''),",
+						"          empleador_id = toInteger(empleador_id),",
 						"          caja_id = toInteger(caja_id),",
 						"          fecha_afiliacion = toDate(fecha_afiliacion, 'yyyy-MM-dd'),",
 						"          nro_matricula = trim(nro_matricula),",

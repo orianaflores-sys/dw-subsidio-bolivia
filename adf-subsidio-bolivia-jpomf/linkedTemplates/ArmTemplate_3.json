@@ -13,6 +13,135 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_sql_silver_bja_controles_pediatricos')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_dw_subsidio",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "control_pediatrico_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ci_nino",
+						"type": "varchar"
+					},
+					{
+						"name": "ci_madre",
+						"type": "varchar"
+					},
+					{
+						"name": "establecimiento_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "nro_control",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "fecha_control",
+						"type": "date"
+					},
+					{
+						"name": "peso_nino_kg",
+						"type": "decimal",
+						"precision": 6,
+						"scale": 2
+					},
+					{
+						"name": "talla_nino_cm",
+						"type": "decimal",
+						"precision": 6,
+						"scale": 2
+					},
+					{
+						"name": "vacuna_aplicada",
+						"type": "varchar"
+					},
+					{
+						"name": "resultado",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "silver",
+					"table": "bja_controles_pediatricos"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_sql_silver_bja_controles_prenatales')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_dw_subsidio",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "control_prenatal_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "varchar"
+					},
+					{
+						"name": "establecimiento_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "nro_control",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "fecha_control",
+						"type": "date"
+					},
+					{
+						"name": "semana_gestacion",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "peso_madre_kg",
+						"type": "decimal",
+						"precision": 6,
+						"scale": 2
+					},
+					{
+						"name": "presion_arterial",
+						"type": "varchar"
+					},
+					{
+						"name": "resultado",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "silver",
+					"table": "bja_controles_prenatales"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_sql_silver_bja_inscripciones')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -232,6 +361,62 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_sql_silver_spl_entregas_agencia')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_dw_subsidio",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "entrega_ag_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "asignacion_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "varchar"
+					},
+					{
+						"name": "fecha_entrega",
+						"type": "date"
+					},
+					{
+						"name": "productos",
+						"type": "varchar"
+					},
+					{
+						"name": "lote",
+						"type": "varchar"
+					},
+					{
+						"name": "peso_kg",
+						"type": "decimal",
+						"precision": 6,
+						"scale": 2
+					},
+					{
+						"name": "punto_entrega",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "silver",
+					"table": "spl_entregas_agencia"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ds_sql_silver_sup_controles')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -398,218 +583,6 @@
 				"typeProperties": {
 					"schema": "silver",
 					"table": "sup_inscripciones"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sql_silver_spl_entregas_agencia')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_sql_dw_subsidio",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "entrega_ag_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "asignacion_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "varchar"
-					},
-					{
-						"name": "fecha_entrega",
-						"type": "date"
-					},
-					{
-						"name": "productos",
-						"type": "varchar"
-					},
-					{
-						"name": "lote",
-						"type": "varchar"
-					},
-					{
-						"name": "peso_kg",
-						"type": "decimal",
-						"precision": 6,
-						"scale": 2
-					},
-					{
-						"name": "punto_entrega",
-						"type": "varchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "silver",
-					"table": "spl_entregas_agencia"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sql_silver_as_recepciones')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_sql_dw_subsidio",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "recepcion_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "nro_lote",
-						"type": "varchar"
-					},
-					{
-						"name": "almacen_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "transportista_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "vehiculo_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "fecha_recepcion",
-						"type": "date"
-					},
-					{
-						"name": "cantidad_recibida",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "unidad",
-						"type": "varchar"
-					},
-					{
-						"name": "condicion",
-						"type": "varchar"
-					},
-					{
-						"name": "estado",
-						"type": "varchar"
-					},
-					{
-						"name": "responsable",
-						"type": "varchar"
-					},
-					{
-						"name": "nro_guia_remision",
-						"type": "varchar"
-					},
-					{
-						"name": "temperatura_llegada",
-						"type": "int",
-						"precision": 10
-					}
-				],
-				"typeProperties": {
-					"schema": "silver",
-					"table": "as_recepciones"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ds_sql_silver_as_despachos')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "ls_sql_dw_subsidio",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [
-					{
-						"name": "despacho_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "recepcion_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "nro_lote",
-						"type": "varchar"
-					},
-					{
-						"name": "almacen_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "transportista_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "vehiculo_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "fecha_despacho",
-						"type": "date"
-					},
-					{
-						"name": "cantidad_despachada",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "centro_destino",
-						"type": "varchar"
-					},
-					{
-						"name": "estado",
-						"type": "varchar"
-					},
-					{
-						"name": "responsable",
-						"type": "varchar"
-					},
-					{
-						"name": "nro_guia_despacho",
-						"type": "varchar"
-					},
-					{
-						"name": "fecha_llegada",
-						"type": "date"
-					}
-				],
-				"typeProperties": {
-					"schema": "silver",
-					"table": "as_despachos"
 				}
 			},
 			"dependsOn": []
@@ -1385,14 +1358,14 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_bja_inscripciones')]",
+				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_bja_controles_prenatales')]",
+				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_bja_controles_pediatricos')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_sup_inscripciones')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_sup_controles')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_sup_entregas')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_spl_afiliaciones')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_spl_asignaciones_mensuales')]",
-				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_spl_entregas_agencia')]",
-				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_as_recepciones')]",
-				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_as_despachos')]"
+				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_spl_entregas_agencia')]"
 			]
 		},
 		{
