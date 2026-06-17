@@ -13,6 +13,176 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_as_despachos')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "silver"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_bronze_as_despachos",
+								"type": "DatasetReference"
+							},
+							"name": "sourceDespachos"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_as_despachos",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          despacho_id as string,",
+						"          recepcion_id as string,",
+						"          nro_lote as string,",
+						"          almacen_id as string,",
+						"          transportista_id as string,",
+						"          vehiculo_id as string,",
+						"          fecha_despacho as string,",
+						"          cantidad_despachada as string,",
+						"          centro_destino as string,",
+						"          estado as string,",
+						"          responsable as string,",
+						"          nro_guia_despacho as string,",
+						"          fecha_llegada as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceDespachos",
+						"sourceDespachos derive(despacho_id = toInteger(despacho_id),",
+						"          recepcion_id = toInteger(recepcion_id),",
+						"          nro_lote = trim(nro_lote),",
+						"          almacen_id = toInteger(almacen_id),",
+						"          transportista_id = toInteger(transportista_id),",
+						"          vehiculo_id = toInteger(vehiculo_id),",
+						"          fecha_despacho = coalesce(     toDate(fecha_despacho,'yyyy-MM-dd'),     toDate(fecha_despacho,'dd-MM-yyyy'),     toDate(fecha_despacho,'MM/dd/yyyy'),     toDate(fecha_despacho,'dd/MM/yyyy') ),",
+						"          cantidad_despachada = toInteger(cantidad_despachada),",
+						"          centro_destino = trim(centro_destino),",
+						"          estado = case(upper(trim(estado)) == 'DEESPACHADO', 'DESPACHADO', upper(trim(estado))),",
+						"          responsable = trim(responsable),",
+						"          nro_guia_despacho = trim(nro_guia_despacho),",
+						"          fecha_llegada = toDate(toString(fecha_llegada), \"yyyy-MM-dd\")) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['as_despachos.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_as_recepciones')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "silver"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_bronze_as_recepciones",
+								"type": "DatasetReference"
+							},
+							"name": "sourceRecepciones"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_as_recepciones",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          recepcion_id as string,",
+						"          nro_lote as string,",
+						"          almacen_id as string,",
+						"          transportista_id as string,",
+						"          vehiculo_id as string,",
+						"          fecha_recepcion as string,",
+						"          cantidad_recibida as string,",
+						"          unidad as string,",
+						"          condicion as string,",
+						"          estado as string,",
+						"          responsable as string,",
+						"          nro_guia_remision as string,",
+						"          temperatura_llegada as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceRecepciones",
+						"sourceRecepciones derive(recepcion_id = toInteger(recepcion_id),",
+						"          nro_lote = trim(nro_lote),",
+						"          almacen_id = toInteger(almacen_id),",
+						"          transportista_id = toInteger(transportista_id),",
+						"          vehiculo_id = toInteger(vehiculo_id),",
+						"          fecha_recepcion = coalesce(\r",
+						"    toDate(fecha_recepcion,'yyyy-MM-dd'),\r",
+						"    toDate(fecha_recepcion,'dd-MM-yyyy'),\r",
+						"    toDate(fecha_recepcion,'MM/dd/yyyy'),\r",
+						"    toDate(fecha_recepcion,'dd/MM/yyyy')\r",
+						"),",
+						"          cantidad_recibida = toInteger(cantidad_recibida),",
+						"          unidad = case(\r",
+						"    lower(trim(unidad)) == 'cajas', 'cajas',\r",
+						"    lower(trim(unidad)) == 'caja', 'cajas',\r",
+						"    lower(trim(unidad)) == 'kg', 'kg',\r",
+						"    lower(trim(unidad)) == 'kilos', 'kg',\r",
+						"    lower(trim(unidad)) == 'kilogramos', 'kg',\r",
+						"    lower(trim(unidad)) == 'unidades', 'unidades',\r",
+						"    lower(trim(unidad)) == 'unidad', 'unidades',\r",
+						"    lower(trim(unidad)) == 'litros', 'litros',\r",
+						"    lower(trim(unidad)) == 'litro', 'litros',\r",
+						"    lower(trim(unidad)) == 'paquetes', 'paquetes',\r",
+						"    lower(trim(unidad)) == 'paquete', 'paquetes',\r",
+						"    lower(trim(unidad))\r",
+						"),",
+						"          condicion = upper(trim(condicion)),",
+						"          estado = upper(trim(estado)),",
+						"          responsable = trim(responsable),",
+						"          nro_guia_remision = trim(nro_guia_remision),",
+						"          temperatura_llegada = toInteger(temperatura_llegada)) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['as_recepciones.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_as_transportistas')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1350,132 +1520,6 @@
 						"derivedColumn1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     partitionFileNames:['sup_boletas.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_sup_catologo_paquetes')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "silver"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_bronze_sup_catalogo_paquetes",
-								"type": "DatasetReference"
-							},
-							"name": "sourceCatalogoPaquetes"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_sup_catalogo_paquetes",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          paquete_id as string,",
-						"          nombre as string,",
-						"          contenido as string,",
-						"          peso_estandar_kg as string,",
-						"          costo_estimado_bs as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourceCatalogoPaquetes",
-						"sourceCatalogoPaquetes derive(paquete_id = toInteger(paquete_id),",
-						"          nombre = trim(nombre),",
-						"          contenido = trim(contenido),",
-						"          peso_estandar_kg = toDecimal(peso_estandar_kg),",
-						"          costo_estimado_bs = toDecimal(costo_estimado_bs)) ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['sup_catalogo-paquetes.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_sup_controles')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "silver"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_bronze_sup_controles",
-								"type": "DatasetReference"
-							},
-							"name": "sourceControles"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_sup_controles",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          control_id as string,",
-						"          ci_beneficiaria as string,",
-						"          establecimiento_id as string,",
-						"          nro_control as string,",
-						"          fecha_control as string,",
-						"          semana_gestacion as string,",
-						"          peso_madre_kg as string,",
-						"          presion_arterial as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourceControles",
-						"sourceControles derive(control_id = toInteger(control_id),",
-						"          ci_beneficiaria = replace(trim(ci_beneficiaria), '-', ''),",
-						"          establecimiento_id = toInteger(establecimiento_id),",
-						"          nro_control = toInteger(nro_control),",
-						"          fecha_control = iif(instr(fecha_control, '/') > 0, toDate(fecha_control, 'MM/dd/yyyy'), toDate(fecha_control, 'yyyy-MM-dd')),",
-						"          semana_gestacion = toInteger(semana_gestacion),",
-						"          peso_madre_kg = toDecimal(peso_madre_kg),",
-						"          presion_arterial = trim(presion_arterial)) ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['sup_controles.csv'],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     partitionBy('hash', 1)) ~> sink1"

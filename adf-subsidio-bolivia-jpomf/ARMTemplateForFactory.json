@@ -914,6 +914,145 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_silver_csv_to_sql')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "copy_bja_inscripciones",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "inscripcion_id",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "inscripcion_id"
+										}
+									},
+									{
+										"source": {
+											"name": "establecimiento_id",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "establecimiento_id"
+										}
+									},
+									{
+										"source": {
+											"name": "fecha_inscripcion",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "fecha_inscripcion"
+										}
+									},
+									{
+										"source": {
+											"name": "semana_gestacion",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "semana_gestacion"
+										}
+									},
+									{
+										"source": {
+											"name": "estado",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "estado"
+										}
+									},
+									{
+										"source": {
+											"name": "ci_beneficiaria",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "ci_beneficiaria"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_csv_silver_bja_inscripciones",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sql_silver",
+								"type": "DatasetReference",
+								"parameters": {
+									"esquema": "silver",
+									"tabla": "bja_inscripciones"
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "gold"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_csv_silver_bja_inscripciones')]",
+				"[concat(variables('factoryId'), '/datasets/ds_sql_silver')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pl_silver_to_gold_dim')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -3838,6 +3977,39 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_sql_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_dw_subsidio",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"esquema": {
+						"type": "string",
+						"defaultValue": "silver"
+					},
+					"tabla": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": " @dataset().esquema",
+					"table": {
+						"value": "@dataset().tabla",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_sql_dw_subsidio')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ls_blob_subsidio')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -6159,6 +6331,65 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_paquete')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_sup_catalogo_paquetes",
+								"type": "DatasetReference"
+							},
+							"name": "sourcePaquetes"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_sql_gold",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          paquete_id as short,",
+						"          nombre as string,",
+						"          contenido as string,",
+						"          peso_estandar_kg as double,",
+						"          costo_estimado_bs as double",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcePaquetes",
+						"sourcePaquetes sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_csv_silver_sup_catalogo_paquetes')]",
+				"[concat(variables('factoryId'), '/datasets/ds_sql_gold')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_persona')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -6274,6 +6505,89 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_punto_entrega')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_spl_entregas_agencias",
+								"type": "DatasetReference"
+							},
+							"name": "sourceEntregasAg"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_sql_gold",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          entrega_ag_id as short,",
+						"          asignacion_id as short,",
+						"          ci_beneficiaria as string,",
+						"          fecha_entrega as date,",
+						"          productos as string,",
+						"          lote as string,",
+						"          peso_kg as double,",
+						"          punto_entrega as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceEntregasAg",
+						"sourceEntregasAg aggregate(groupBy(punto_entrega),",
+						"     total = count(punto_entrega)) ~> aggregate1",
+						"aggregate1 derive(nombre = punto_entrega,",
+						"          tipo = 'Centro de Distribución',",
+						"          municipio = case(like(upper(punto_entrega),'%LA PAZ%'),'LA PAZ', like(upper(punto_entrega),'%EL ALTO%'),'EL ALTO', like(upper(punto_entrega),'%COCHABAMBA%'),'COCHABAMBA', like(upper(punto_entrega),'%QUILLACOLLO%'),'QUILLACOLLO', like(upper(punto_entrega),'%SANTA CRUZ%'),'SANTA CRUZ DE LA SIERRA', like(upper(punto_entrega),'%MONTERO%'),'MONTERO', like(upper(punto_entrega),'%SUCRE%'),'SUCRE', like(upper(punto_entrega),'%TARIJA%'),'TARIJA', like(upper(punto_entrega),'%ORURO%'),'ORURO', like(upper(punto_entrega),'%POTOSI%'),'POTOSI', 'DESCONOCIDO'),",
+						"          departamento = case(like(upper(punto_entrega),'%LA PAZ%') || like(upper(punto_entrega),'%EL ALTO%'),'LA PAZ', like(upper(punto_entrega),'%COCHABAMBA%') || like(upper(punto_entrega),'%QUILLACOLLO%'),'COCHABAMBA', like(upper(punto_entrega),'%SANTA CRUZ%') || like(upper(punto_entrega),'%MONTERO%'),'SANTA CRUZ', like(upper(punto_entrega),'%SUCRE%'),'CHUQUISACA', like(upper(punto_entrega),'%TARIJA%'),'TARIJA', like(upper(punto_entrega),'%ORURO%'),'ORURO', like(upper(punto_entrega),'%POTOSI%'),'POTOSI', 'DESCONOCIDO')) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          punto_entrega,",
+						"          total,",
+						"          nombre,",
+						"          tipo,",
+						"          municipio,",
+						"          departamento",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_csv_silver_spl_entregas_agencias')]",
+				"[concat(variables('factoryId'), '/datasets/ds_sql_gold')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_supermercado')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -6354,148 +6668,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_csv_silver_spl_supermercados')]",
-				"[concat(variables('factoryId'), '/datasets/ds_sql_gold')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_paquete')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "gold"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_sup_catalogo_paquetes",
-								"type": "DatasetReference"
-							},
-							"name": "sourcePaquetes"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_sql_gold",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [],
-					"scriptLines": [
-						"source(output(",
-						"          paquete_id as short,",
-						"          nombre as string,",
-						"          contenido as string,",
-						"          peso_estandar_kg as double,",
-						"          costo_estimado_bs as double",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourcePaquetes",
-						"sourcePaquetes sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     truncate:true,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_csv_silver_sup_catalogo_paquetes')]",
-				"[concat(variables('factoryId'), '/datasets/ds_sql_gold')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_punto_entrega')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "gold"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_spl_entregas_agencias",
-								"type": "DatasetReference"
-							},
-							"name": "sourceEntregasAg"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_sql_gold",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "aggregate1"
-						},
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          entrega_ag_id as short,",
-						"          asignacion_id as short,",
-						"          ci_beneficiaria as string,",
-						"          fecha_entrega as date,",
-						"          productos as string,",
-						"          lote as string,",
-						"          peso_kg as double,",
-						"          punto_entrega as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourceEntregasAg",
-						"sourceEntregasAg aggregate(groupBy(punto_entrega),",
-						"     total = count(punto_entrega)) ~> aggregate1",
-						"aggregate1 derive(nombre = punto_entrega,",
-						"          tipo = 'Centro de Distribución',",
-						"          municipio = case(like(upper(punto_entrega),'%LA PAZ%'),'LA PAZ', like(upper(punto_entrega),'%EL ALTO%'),'EL ALTO', like(upper(punto_entrega),'%COCHABAMBA%'),'COCHABAMBA', like(upper(punto_entrega),'%QUILLACOLLO%'),'QUILLACOLLO', like(upper(punto_entrega),'%SANTA CRUZ%'),'SANTA CRUZ DE LA SIERRA', like(upper(punto_entrega),'%MONTERO%'),'MONTERO', like(upper(punto_entrega),'%SUCRE%'),'SUCRE', like(upper(punto_entrega),'%TARIJA%'),'TARIJA', like(upper(punto_entrega),'%ORURO%'),'ORURO', like(upper(punto_entrega),'%POTOSI%'),'POTOSI', 'DESCONOCIDO'),",
-						"          departamento = case(like(upper(punto_entrega),'%LA PAZ%') || like(upper(punto_entrega),'%EL ALTO%'),'LA PAZ', like(upper(punto_entrega),'%COCHABAMBA%') || like(upper(punto_entrega),'%QUILLACOLLO%'),'COCHABAMBA', like(upper(punto_entrega),'%SANTA CRUZ%') || like(upper(punto_entrega),'%MONTERO%'),'SANTA CRUZ', like(upper(punto_entrega),'%SUCRE%'),'CHUQUISACA', like(upper(punto_entrega),'%TARIJA%'),'TARIJA', like(upper(punto_entrega),'%ORURO%'),'ORURO', like(upper(punto_entrega),'%POTOSI%'),'POTOSI', 'DESCONOCIDO')) ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     truncate:true,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          punto_entrega,",
-						"          total,",
-						"          nombre,",
-						"          tipo,",
-						"          municipio,",
-						"          departamento",
-						"     )) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/ds_csv_silver_spl_entregas_agencias')]",
 				"[concat(variables('factoryId'), '/datasets/ds_sql_gold')]"
 			]
 		}

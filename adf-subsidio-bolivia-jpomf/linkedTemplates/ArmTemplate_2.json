@@ -530,6 +530,175 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ds_sql_silver')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_sql_dw_subsidio",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"esquema": {
+						"type": "string",
+						"defaultValue": "silver"
+					},
+					"tabla": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": " @dataset().esquema",
+					"table": {
+						"value": "@dataset().tabla",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_silver_csv_to_sql')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "copy_bja_inscripciones",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "inscripcion_id",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "inscripcion_id"
+										}
+									},
+									{
+										"source": {
+											"name": "establecimiento_id",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "establecimiento_id"
+										}
+									},
+									{
+										"source": {
+											"name": "fecha_inscripcion",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "fecha_inscripcion"
+										}
+									},
+									{
+										"source": {
+											"name": "semana_gestacion",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "semana_gestacion"
+										}
+									},
+									{
+										"source": {
+											"name": "estado",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "estado"
+										}
+									},
+									{
+										"source": {
+											"name": "ci_beneficiaria",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "ci_beneficiaria"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_csv_silver_bja_inscripciones",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sql_silver",
+								"type": "DatasetReference",
+								"parameters": {
+									"esquema": "silver",
+									"tabla": "bja_inscripciones"
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "gold"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_sql_silver')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_as_almacenes')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -585,176 +754,6 @@
 						"derivedColumn1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     partitionFileNames:['as_almacenes.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_as_despachos')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "silver"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_bronze_as_despachos",
-								"type": "DatasetReference"
-							},
-							"name": "sourceDespachos"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_as_despachos",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          despacho_id as string,",
-						"          recepcion_id as string,",
-						"          nro_lote as string,",
-						"          almacen_id as string,",
-						"          transportista_id as string,",
-						"          vehiculo_id as string,",
-						"          fecha_despacho as string,",
-						"          cantidad_despachada as string,",
-						"          centro_destino as string,",
-						"          estado as string,",
-						"          responsable as string,",
-						"          nro_guia_despacho as string,",
-						"          fecha_llegada as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourceDespachos",
-						"sourceDespachos derive(despacho_id = toInteger(despacho_id),",
-						"          recepcion_id = toInteger(recepcion_id),",
-						"          nro_lote = trim(nro_lote),",
-						"          almacen_id = toInteger(almacen_id),",
-						"          transportista_id = toInteger(transportista_id),",
-						"          vehiculo_id = toInteger(vehiculo_id),",
-						"          fecha_despacho = coalesce(     toDate(fecha_despacho,'yyyy-MM-dd'),     toDate(fecha_despacho,'dd-MM-yyyy'),     toDate(fecha_despacho,'MM/dd/yyyy'),     toDate(fecha_despacho,'dd/MM/yyyy') ),",
-						"          cantidad_despachada = toInteger(cantidad_despachada),",
-						"          centro_destino = trim(centro_destino),",
-						"          estado = case(upper(trim(estado)) == 'DEESPACHADO', 'DESPACHADO', upper(trim(estado))),",
-						"          responsable = trim(responsable),",
-						"          nro_guia_despacho = trim(nro_guia_despacho),",
-						"          fecha_llegada = toDate(toString(fecha_llegada), \"yyyy-MM-dd\")) ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['as_despachos.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_as_recepciones')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "silver"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_bronze_as_recepciones",
-								"type": "DatasetReference"
-							},
-							"name": "sourceRecepciones"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_as_recepciones",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          recepcion_id as string,",
-						"          nro_lote as string,",
-						"          almacen_id as string,",
-						"          transportista_id as string,",
-						"          vehiculo_id as string,",
-						"          fecha_recepcion as string,",
-						"          cantidad_recibida as string,",
-						"          unidad as string,",
-						"          condicion as string,",
-						"          estado as string,",
-						"          responsable as string,",
-						"          nro_guia_remision as string,",
-						"          temperatura_llegada as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourceRecepciones",
-						"sourceRecepciones derive(recepcion_id = toInteger(recepcion_id),",
-						"          nro_lote = trim(nro_lote),",
-						"          almacen_id = toInteger(almacen_id),",
-						"          transportista_id = toInteger(transportista_id),",
-						"          vehiculo_id = toInteger(vehiculo_id),",
-						"          fecha_recepcion = coalesce(\r",
-						"    toDate(fecha_recepcion,'yyyy-MM-dd'),\r",
-						"    toDate(fecha_recepcion,'dd-MM-yyyy'),\r",
-						"    toDate(fecha_recepcion,'MM/dd/yyyy'),\r",
-						"    toDate(fecha_recepcion,'dd/MM/yyyy')\r",
-						"),",
-						"          cantidad_recibida = toInteger(cantidad_recibida),",
-						"          unidad = case(\r",
-						"    lower(trim(unidad)) == 'cajas', 'cajas',\r",
-						"    lower(trim(unidad)) == 'caja', 'cajas',\r",
-						"    lower(trim(unidad)) == 'kg', 'kg',\r",
-						"    lower(trim(unidad)) == 'kilos', 'kg',\r",
-						"    lower(trim(unidad)) == 'kilogramos', 'kg',\r",
-						"    lower(trim(unidad)) == 'unidades', 'unidades',\r",
-						"    lower(trim(unidad)) == 'unidad', 'unidades',\r",
-						"    lower(trim(unidad)) == 'litros', 'litros',\r",
-						"    lower(trim(unidad)) == 'litro', 'litros',\r",
-						"    lower(trim(unidad)) == 'paquetes', 'paquetes',\r",
-						"    lower(trim(unidad)) == 'paquete', 'paquetes',\r",
-						"    lower(trim(unidad))\r",
-						"),",
-						"          condicion = upper(trim(condicion)),",
-						"          estado = upper(trim(estado)),",
-						"          responsable = trim(responsable),",
-						"          nro_guia_remision = trim(nro_guia_remision),",
-						"          temperatura_llegada = toInteger(temperatura_llegada)) ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['as_recepciones.csv'],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     partitionBy('hash', 1)) ~> sink1"
