@@ -1586,7 +1586,7 @@
 					},
 					{
 						"name": "copy_as_recepciones",
-						"description": "TRUNCATE TABLE silver.as_recepciones;",
+						"description": "",
 						"type": "Copy",
 						"dependsOn": [],
 						"policy": {
@@ -1611,8 +1611,10 @@
 							},
 							"sink": {
 								"type": "AzureSqlSink",
+								"preCopyScript": "TRUNCATE TABLE silver.as_recepciones;",
 								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
 							},
 							"enableStaging": false,
 							"translator": {
