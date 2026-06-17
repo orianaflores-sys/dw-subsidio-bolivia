@@ -227,6 +227,284 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_caja_salud')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_spl_cajas",
+								"type": "DatasetReference"
+							},
+							"name": "sourceCajas"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_sql_gold",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          id_caja as short,",
+						"          nombre as string,",
+						"          sigla as string,",
+						"          tipo as string,",
+						"          estado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceCajas",
+						"sourceCajas select(mapColumn(",
+						"          id_caja,",
+						"          nombre,",
+						"          sigla,",
+						"          tipo",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          id_caja,",
+						"          nombre,",
+						"          sigla,",
+						"          tipo",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_empleador')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_spl_empleadores",
+								"type": "DatasetReference"
+							},
+							"name": "sourceEmpleadores"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_sql_gold",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empleador_id as short,",
+						"          nit as integer,",
+						"          razon_social as string,",
+						"          tipo as string,",
+						"          nro_patronal as string,",
+						"          municipio as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceEmpleadores",
+						"sourceEmpleadores derive(departamento = case(upper(municipio) == 'LA PAZ' || upper(municipio) == 'EL ALTO' || upper(municipio) == 'VIACHA' || upper(municipio) == 'ACHACACHI' || upper(municipio) == 'COPACABANA' || upper(municipio) == 'PATACAMAYA', 'LA PAZ', upper(municipio) == 'COCHABAMBA' || upper(municipio) == 'QUILLACOLLO' || upper(municipio) == 'SIPE SIPE', 'COCHABAMBA', upper(municipio) == 'SANTA CRUZ DE LA SIERRA' || upper(municipio) == 'MONTERO' || upper(municipio) == 'WARNES', 'SANTA CRUZ', upper(municipio) == 'TARIJA' || upper(municipio) == 'YACUIBA', 'TARIJA', upper(municipio) == 'ORURO', 'ORURO', upper(municipio) == 'POTOSI' || upper(municipio) == 'LLALLAGUA', 'POTOSI', upper(municipio) == 'SUCRE' || upper(municipio) == 'MONTEAGUDO', 'CHUQUISACA', upper(municipio) == 'TRINIDAD' || upper(municipio) == 'RIBERALTA', 'BENI', upper(municipio) == 'COBIJA' || upper(municipio) == 'PORVENIR', 'PANDO', 'DESCONOCIDO')) ~> derivedColumn1",
+						"derivedColumn1 select(mapColumn(",
+						"          empleador_id,",
+						"          nit,",
+						"          razon_social,",
+						"          tipo,",
+						"          municipio,",
+						"          departamento",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          empleador_id,",
+						"          nit,",
+						"          razon_social,",
+						"          tipo,",
+						"          municipio,",
+						"          departamento",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_establecimiento')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_bja_establecimientos_salud",
+								"type": "DatasetReference"
+							},
+							"name": "sourceBjaEst"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_sup_establecimientos",
+								"type": "DatasetReference"
+							},
+							"name": "sourceSupEst"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_sql_gold",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "derivedColumn2"
+						},
+						{
+							"name": "union1"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          establecimiento_id as short,",
+						"          codigo_snis as string,",
+						"          nombre as string,",
+						"          tipo as string,",
+						"          nivel_atencion as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          red_salud as string,",
+						"          estado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceBjaEst",
+						"source(output(",
+						"          establecimiento_id as short,",
+						"          codigo_snis as string,",
+						"          nombre as string,",
+						"          tipo as string,",
+						"          nivel_atencion as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          red_salud as string,",
+						"          estado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceSupEst",
+						"sourceBjaEst derive(sistema_origen = 'BJA') ~> derivedColumn1",
+						"sourceSupEst derive(sistema_origen = 'SUP') ~> derivedColumn2",
+						"derivedColumn1, derivedColumn2 union(byName: true)~> union1",
+						"union1 select(mapColumn(",
+						"          establecimiento_id,",
+						"          codigo_snis,",
+						"          nombre,",
+						"          tipo,",
+						"          nivel_atencion,",
+						"          municipio,",
+						"          departamento,",
+						"          red_salud,",
+						"          sistema_origen",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          establecimiento_id,",
+						"          codigo_snis,",
+						"          nombre,",
+						"          tipo,",
+						"          nivel_atencion,",
+						"          municipio,",
+						"          departamento,",
+						"          red_salud,",
+						"          sistema_origen",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_persona')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -332,6 +610,223 @@
 						"          municipio,",
 						"          departamento,",
 						"          departamento_ci",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_supermercado')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_spl_supermercados",
+								"type": "DatasetReference"
+							},
+							"name": "sourceSupermercados"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_sql_gold",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          id_supermercado as short,",
+						"          cadena as string,",
+						"          sucursal as string,",
+						"          municipio as string,",
+						"          {dirección} as string,",
+						"          estado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceSupermercados",
+						"sourceSupermercados derive(departamento = case(upper(municipio) == 'LA PAZ' || upper(municipio) == 'EL ALTO' || upper(municipio) == 'VIACHA', 'LA PAZ', upper(municipio) == 'COCHABAMBA' || upper(municipio) == 'QUILLACOLLO', 'COCHABAMBA', upper(municipio) == 'SANTA CRUZ DE LA SIERRA' || upper(municipio) == 'MONTERO', 'SANTA CRUZ', upper(municipio) == 'TARIJA' || upper(municipio) == 'YACUIBA', 'TARIJA', upper(municipio) == 'ORURO', 'ORURO', upper(municipio) == 'POTOSI' || upper(municipio) == 'LLALLAGUA', 'POTOSI', upper(municipio) == 'SUCRE', 'CHUQUISACA', upper(municipio) == 'TRINIDAD', 'BENI', upper(municipio) == 'COBIJA', 'PANDO', 'DESCONOCIDO')) ~> derivedColumn1",
+						"derivedColumn1 select(mapColumn(",
+						"          id_supermercado,",
+						"          cadena,",
+						"          sucursal,",
+						"          municipio,",
+						"          departamento",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          id_supermercado,",
+						"          cadena,",
+						"          sucursal,",
+						"          municipio,",
+						"          departamento",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_paquete')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_sup_catalogo_paquetes",
+								"type": "DatasetReference"
+							},
+							"name": "sourcePaquetes"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_sql_gold",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          paquete_id as short,",
+						"          nombre as string,",
+						"          contenido as string,",
+						"          peso_estandar_kg as double,",
+						"          costo_estimado_bs as double",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcePaquetes",
+						"sourcePaquetes sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_punto_entrega')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_spl_entregas_agencias",
+								"type": "DatasetReference"
+							},
+							"name": "sourceEntregasAg"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_sql_gold",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          entrega_ag_id as short,",
+						"          asignacion_id as short,",
+						"          ci_beneficiaria as string,",
+						"          fecha_entrega as date,",
+						"          productos as string,",
+						"          lote as string,",
+						"          peso_kg as double,",
+						"          punto_entrega as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceEntregasAg",
+						"sourceEntregasAg aggregate(groupBy(punto_entrega),",
+						"     total = count(punto_entrega)) ~> aggregate1",
+						"aggregate1 derive(nombre = punto_entrega,",
+						"          tipo = 'Centro de Distribución',",
+						"          municipio = case(like(upper(punto_entrega),'%LA PAZ%'),'LA PAZ', like(upper(punto_entrega),'%EL ALTO%'),'EL ALTO', like(upper(punto_entrega),'%COCHABAMBA%'),'COCHABAMBA', like(upper(punto_entrega),'%QUILLACOLLO%'),'QUILLACOLLO', like(upper(punto_entrega),'%SANTA CRUZ%'),'SANTA CRUZ DE LA SIERRA', like(upper(punto_entrega),'%MONTERO%'),'MONTERO', like(upper(punto_entrega),'%SUCRE%'),'SUCRE', like(upper(punto_entrega),'%TARIJA%'),'TARIJA', like(upper(punto_entrega),'%ORURO%'),'ORURO', like(upper(punto_entrega),'%POTOSI%'),'POTOSI', 'DESCONOCIDO'),",
+						"          departamento = case(like(upper(punto_entrega),'%LA PAZ%') || like(upper(punto_entrega),'%EL ALTO%'),'LA PAZ', like(upper(punto_entrega),'%COCHABAMBA%') || like(upper(punto_entrega),'%QUILLACOLLO%'),'COCHABAMBA', like(upper(punto_entrega),'%SANTA CRUZ%') || like(upper(punto_entrega),'%MONTERO%'),'SANTA CRUZ', like(upper(punto_entrega),'%SUCRE%'),'CHUQUISACA', like(upper(punto_entrega),'%TARIJA%'),'TARIJA', like(upper(punto_entrega),'%ORURO%'),'ORURO', like(upper(punto_entrega),'%POTOSI%'),'POTOSI', 'DESCONOCIDO')) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          punto_entrega,",
+						"          total,",
+						"          nombre,",
+						"          tipo,",
+						"          municipio,",
+						"          departamento",
 						"     )) ~> sink1"
 					]
 				}
@@ -493,36 +988,6 @@
 							},
 							"traceLevel": "Fine"
 						}
-					},
-					{
-						"name": "df_entregas",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_bronze_to_silver_sup_entregas",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceEntregas": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
 					}
 				],
 				"policy": {
@@ -530,9 +995,7 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_sup_entregas')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_bronze_to_silver_bja')]",
@@ -1181,6 +1644,36 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "df_entregas",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_bronze_to_silver_sup_entregas",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceEntregas": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -1190,7 +1683,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_sup_inscripciones')]",
-				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_sup_establecimientos')]"
+				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_sup_establecimientos')]",
+				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_sup_entregas')]"
 			]
 		},
 		{
@@ -1231,6 +1725,205 @@
 							},
 							"traceLevel": "Fine"
 						}
+					},
+					{
+						"name": "df_dim_establecimiento",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_silver_to_gold_dim_establecimiento",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceBjaEst": {},
+									"sourceSupEst": {},
+									"sink1": {
+										"esquema": "gold",
+										"tabla": "dim_establecimiento"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "df_dim_empleador",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_silver_to_gold_dim_empleador",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceEmpleadores": {},
+									"sink1": {
+										"esquema": "gold",
+										"tabla": "dim_empleador"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "df_dim_caja_salud",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_silver_to_gold_dim_caja_salud",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceCajas": {},
+									"sink1": {
+										"esquema": "gold",
+										"tabla": "dim_caja_salud"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "df_dim_supermercado",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_silver_to_gold_dim_supermercado",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceSupermercados": {},
+									"sink1": {
+										"esquema": "gold",
+										"tabla": "dim_supermercado"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "df_dim_paquete",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_silver_to_gold_dim_paquete",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourcePaquetes": {},
+									"sink1": {
+										"esquema": "gold",
+										"tabla": "dim_paquete"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "df_punto_entrega",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_silver_to_gold_dim_punto_entrega",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceEntregasAg": {},
+									"sink1": {
+										"esquema": "gold",
+										"tabla": "dim_punto_entrega"
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -1239,7 +1932,13 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_persona')]"
+				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_persona')]",
+				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_establecimiento')]",
+				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_empleador')]",
+				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_caja_salud')]",
+				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_supermercado')]",
+				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_paquete')]",
+				"[concat(variables('factoryId'), '/dataflows/df_silver_to_gold_dim_punto_entrega')]"
 			]
 		}
 	]
