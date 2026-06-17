@@ -1,0 +1,25 @@
+{
+	"name": "ds_sql_silver",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"esquema": {
+				"type": "string",
+				"defaultValue": "silver"
+			},
+			"tabla": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": " @dataset().esquema",
+			"table": "@dataset().tabla"
+		}
+	}
+}
