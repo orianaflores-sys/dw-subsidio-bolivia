@@ -1029,12 +1029,9 @@
 						],
 						"outputs": [
 							{
-								"referenceName": "ds_sql_silver",
+								"referenceName": "ds_sql_silver_bja_inscripciones",
 								"type": "DatasetReference",
-								"parameters": {
-									"esquema": "silver",
-									"tabla": "bja_inscripciones"
-								}
+								"parameters": {}
 							}
 						]
 					}
@@ -1049,7 +1046,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_csv_silver_bja_inscripciones')]",
-				"[concat(variables('factoryId'), '/datasets/ds_sql_silver')]"
+				"[concat(variables('factoryId'), '/datasets/ds_sql_silver_bja_inscripciones')]"
 			]
 		},
 		{
