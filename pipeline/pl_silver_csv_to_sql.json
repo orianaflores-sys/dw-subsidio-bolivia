@@ -26,12 +26,97 @@
 							"type": "DelimitedTextReadSettings"
 						}
 					},
-					"enableStaging": false
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "inscripcion_id",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "inscripcion_id"
+								}
+							},
+							{
+								"source": {
+									"name": "establecimiento_id",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "establecimiento_id"
+								}
+							},
+							{
+								"source": {
+									"name": "fecha_inscripcion",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "fecha_inscripcion"
+								}
+							},
+							{
+								"source": {
+									"name": "semana_gestacion",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "semana_gestacion"
+								}
+							},
+							{
+								"source": {
+									"name": "estado",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "estado"
+								}
+							},
+							{
+								"source": {
+									"name": "ci_beneficiaria",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "ci_beneficiaria"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
 				},
 				"inputs": [
 					{
 						"referenceName": "ds_csv_silver_bja_inscripciones",
 						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_sql_silver",
+						"type": "DatasetReference",
+						"parameters": {
+							"esquema": "silver",
+							"tabla": "bja_inscripciones"
+						}
 					}
 				]
 			}
