@@ -1,0 +1,77 @@
+{
+	"name": "df_silver_to_gold_dim_punto_entrega",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv_silver_spl_entregas_agencias",
+						"type": "DatasetReference"
+					},
+					"name": "sourceEntregasAg"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          entrega_ag_id as short,",
+				"          asignacion_id as short,",
+				"          ci_beneficiaria as string,",
+				"          fecha_entrega as date,",
+				"          productos as string,",
+				"          lote as string,",
+				"          peso_kg as double,",
+				"          punto_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceEntregasAg",
+				"sourceEntregasAg aggregate(groupBy(punto_entrega),",
+				"     total = count(punto_entrega)) ~> aggregate1",
+				"aggregate1 derive(nombre = punto_entrega,",
+				"          tipo = 'Centro de Distribución',",
+				"          municipio = case(like(upper(punto_entrega),'%LA PAZ%'),'LA PAZ', like(upper(punto_entrega),'%EL ALTO%'),'EL ALTO', like(upper(punto_entrega),'%COCHABAMBA%'),'COCHABAMBA', like(upper(punto_entrega),'%QUILLACOLLO%'),'QUILLACOLLO', like(upper(punto_entrega),'%SANTA CRUZ%'),'SANTA CRUZ DE LA SIERRA', like(upper(punto_entrega),'%MONTERO%'),'MONTERO', like(upper(punto_entrega),'%SUCRE%'),'SUCRE', like(upper(punto_entrega),'%TARIJA%'),'TARIJA', like(upper(punto_entrega),'%ORURO%'),'ORURO', like(upper(punto_entrega),'%POTOSI%'),'POTOSI', 'DESCONOCIDO'),",
+				"          departamento = case(like(upper(punto_entrega),'%LA PAZ%') || like(upper(punto_entrega),'%EL ALTO%'),'LA PAZ', like(upper(punto_entrega),'%COCHABAMBA%') || like(upper(punto_entrega),'%QUILLACOLLO%'),'COCHABAMBA', like(upper(punto_entrega),'%SANTA CRUZ%') || like(upper(punto_entrega),'%MONTERO%'),'SANTA CRUZ', like(upper(punto_entrega),'%SUCRE%'),'CHUQUISACA', like(upper(punto_entrega),'%TARIJA%'),'TARIJA', like(upper(punto_entrega),'%ORURO%'),'ORURO', like(upper(punto_entrega),'%POTOSI%'),'POTOSI', 'DESCONOCIDO')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          punto_entrega,",
+				"          total,",
+				"          nombre,",
+				"          tipo,",
+				"          municipio,",
+				"          departamento",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
