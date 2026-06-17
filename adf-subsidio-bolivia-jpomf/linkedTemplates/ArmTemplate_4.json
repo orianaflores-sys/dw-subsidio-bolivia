@@ -13,6 +13,253 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_bja_pagos')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "silver"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_bronze_bja_pagos",
+								"type": "DatasetReference"
+							},
+							"name": "sourcePagos"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_bja_pagos",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          pago_id as string,",
+						"          ci_beneficiaria as string,",
+						"          concepto_pago as string,",
+						"          monto_bs as string,",
+						"          fecha_pago as string,",
+						"          estado_pago as string,",
+						"          canal_pago as string,",
+						"          nro_comprobante as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcePagos",
+						"sourcePagos derive(pago_id = toInteger(pago_id),",
+						"          ci_beneficiaria = trim(ci_beneficiaria),",
+						"          concepto_pago = upper(trim(concepto_pago)),",
+						"          monto_bs = toDecimal(monto_bs),",
+						"          fecha_pago = coalesce(\r",
+						"    toDate(fecha_pago,'yyyy-MM-dd'),\r",
+						"    toDate(fecha_pago,'dd-MM-yyyy'),\r",
+						"    toDate(fecha_pago,'MM/dd/yyyy'),\r",
+						"    toDate(fecha_pago,'dd/MM/yyyy')\r",
+						"),",
+						"          estado_pago = upper(trim(estado_pago)),",
+						"          canal_pago = iif(\r",
+						"    upper(trim(canal_pago)) == 'PGO MÓVIL' ||\r",
+						"    upper(trim(canal_pago)) == 'PAGO MÓVIL',\r",
+						"    'PAGO MÓVIL',\r",
+						"\r",
+						"    iif(\r",
+						"        upper(trim(canal_pago)) == 'BANCO UNIN' ||\r",
+						"        upper(trim(canal_pago)) == 'BANCO UNIÓN',\r",
+						"        'BANCO UNIÓN',\r",
+						"\r",
+						"        iif(\r",
+						"            upper(trim(canal_pago)) == 'TRANSFERENCIA BANCARIA',\r",
+						"            'TRANSFERENCIA BANCARIA',\r",
+						"            upper(trim(canal_pago))\r",
+						"        )\r",
+						"    )\r",
+						"),",
+						"          nro_comprobante = trim(nro_comprobante)) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['bja_pagos.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_bja_partos')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "silver"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_bronze_bja_partos",
+								"type": "DatasetReference"
+							},
+							"name": "sourcePartos"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_bja_partos",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          parto_id as string,",
+						"          ci_madre as string,",
+						"          ci_recien_nacido as string,",
+						"          establecimiento_id as string,",
+						"          fecha_parto as string,",
+						"          tipo_parto as string,",
+						"          peso_nacimiento_kg as string,",
+						"          talla_nacimiento_cm as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcePartos",
+						"sourcePartos derive(parto_id = toInteger(parto_id),",
+						"          ci_madre = trim(ci_madre),",
+						"          ci_recien_nacido = trim(ci_recien_nacido),",
+						"          establecimiento_id = toInteger(establecimiento_id),",
+						"          fecha_parto = coalesce(     toDate(fecha_parto,'yyyy-MM-dd'),     toDate(fecha_parto,'dd-MM-yyyy'),     toDate(fecha_parto,'MM/dd/yyyy'),     toDate(fecha_parto,'dd/MM/yyyy') ),",
+						"          tipo_parto = iif(\r",
+						"    upper(trim(tipo_parto)) == 'CESÁREA' ||\r",
+						"    upper(trim(tipo_parto)) == 'CESÁRAE' ||\r",
+						"    upper(trim(tipo_parto)) == 'CESÁRREA' ||\r",
+						"    upper(trim(tipo_parto)) == 'CEÁREA' ||\r",
+						"    upper(trim(tipo_parto)) == 'CESSÁREA',\r",
+						"    'CESÁREA',\r",
+						"\r",
+						"    iif(\r",
+						"        upper(trim(tipo_parto)) == 'NATURAL' ||\r",
+						"        upper(trim(tipo_parto)) == 'NAUTRAL' ||\r",
+						"        upper(trim(tipo_parto)) == 'NATURL' ||\r",
+						"        upper(trim(tipo_parto)) == 'NTURAL' ||\r",
+						"        upper(trim(tipo_parto)) == 'NATTURAL',\r",
+						"        'NATURAL',\r",
+						"\r",
+						"        'NO ESPECIFICADO'\r",
+						"    )\r",
+						"),",
+						"          peso_nacimiento_kg = toDecimal(peso_nacimiento_kg),",
+						"          talla_nacimiento_cm = toDecimal(talla_nacimiento_cm)) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['bja_partos.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_segip')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "silver"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_bronze_segip",
+								"type": "DatasetReference"
+							},
+							"name": "sourceSegip"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_segip",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ci as string,",
+						"          nombres as string,",
+						"          apellido_paterno as string,",
+						"          apellido_materno as string,",
+						"          fecha_nacimiento as string,",
+						"          genero as string,",
+						"          estado_civil as string,",
+						"          ci_conyuge as string,",
+						"          numero_hijos as string,",
+						"          ci_padre as string,",
+						"          ci_madre as string,",
+						"          profesion as string,",
+						"          nivel_estudios as string,",
+						"          municipio_residencia as string,",
+						"          fecha_emision as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceSegip",
+						"sourceSegip derive(ci = trim(ci),",
+						"          nombres = trim(nombres),",
+						"          apellido_paterno = trim(apellido_paterno),",
+						"          apellido_materno = trim(apellido_materno),",
+						"          fecha_nacimiento = toDate(fecha_nacimiento, 'yyyy-MM-dd'),",
+						"          genero = upper(trim(genero)),",
+						"          estado_civil = upper(trim(estado_civil)),",
+						"          numero_hijos = toInteger(numero_hijos),",
+						"          municipio_residencia = trim(municipio_residencia),",
+						"          fecha_emision = toDate(fecha_emision, 'yyyy-MM-dd'),",
+						"          departamento_ci = case(right(ci,2)=='LP','LA PAZ',right(ci,2)=='CB','COCHABAMBA',right(ci,2)=='SC','SANTA CRUZ',right(ci,2)=='OR','ORURO',right(ci,2)=='PT','POTOSI',right(ci,2)=='TJ','TARIJA',right(ci,2)=='CH','CHUQUISACA',right(ci,2)=='BN','BENI',right(ci,2)=='PD','PANDO','DESCONOCIDO')) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['segip.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_spl_afiliaciones')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1285,254 +1532,6 @@
 						"          departamento,",
 						"          red_salud,",
 						"          sistema_origen",
-						"     )) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_paquete')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "gold"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_sup_catalogo_paquetes",
-								"type": "DatasetReference"
-							},
-							"name": "sourcePaquetes"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_sql_gold",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [],
-					"scriptLines": [
-						"source(output(",
-						"          paquete_id as short,",
-						"          nombre as string,",
-						"          contenido as string,",
-						"          peso_estandar_kg as double,",
-						"          costo_estimado_bs as double",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourcePaquetes",
-						"sourcePaquetes sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     truncate:true,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_persona')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "gold"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_segip",
-								"type": "DatasetReference"
-							},
-							"name": "sourceSegip"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_sql_gold",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn1"
-						},
-						{
-							"name": "select1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          ci as string,",
-						"          nombres as string,",
-						"          apellido_paterno as string,",
-						"          apellido_materno as string,",
-						"          fecha_nacimiento as date,",
-						"          genero as string,",
-						"          estado_civil as string,",
-						"          ci_conyuge as string,",
-						"          numero_hijos as short,",
-						"          ci_padre as string,",
-						"          ci_madre as string,",
-						"          profesion as string,",
-						"          nivel_estudios as string,",
-						"          municipio_residencia as string,",
-						"          fecha_emision as date,",
-						"          departamento_ci as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourceSegip",
-						"sourceSegip derive(apellidos = concat(coalesce(apellido_paterno,''),' ',coalesce(apellido_materno,'')),",
-						"          edad = year(currentDate()) - year(fecha_nacimiento),",
-						"          grupo_edad = case((year(currentDate()) - year(fecha_nacimiento)) < 18, 'Menor de 18', (year(currentDate()) - year(fecha_nacimiento)) <= 25, '18-25', (year(currentDate()) - year(fecha_nacimiento)) <= 35, '26-35', (year(currentDate()) - year(fecha_nacimiento)) <= 50, '36-50', 'Mayor de 50'),",
-						"          departamento = case(right(ci,2)=='LP','LA PAZ',right(ci,2)=='CB','COCHABAMBA',right(ci,2)=='SC','SANTA CRUZ',right(ci,2)=='OR','ORURO',right(ci,2)=='PT','POTOSI',right(ci,2)=='TJ','TARIJA',right(ci,2)=='CH','CHUQUISACA',right(ci,2)=='BN','BENI',right(ci,2)=='PD','PANDO','DESCONOCIDO'),",
-						"          departamento_ci = right(ci,2),",
-						"          municipio = trim(municipio_residencia)) ~> derivedColumn1",
-						"derivedColumn1 select(mapColumn(",
-						"          ci,",
-						"          nombres,",
-						"          apellidos,",
-						"          fecha_nacimiento,",
-						"          edad,",
-						"          grupo_edad,",
-						"          genero,",
-						"          estado_civil,",
-						"          profesion,",
-						"          nivel_estudios,",
-						"          municipio,",
-						"          departamento,",
-						"          departamento_ci",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     truncate:true,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          ci,",
-						"          nombres,",
-						"          apellidos,",
-						"          fecha_nacimiento,",
-						"          edad,",
-						"          grupo_edad,",
-						"          genero,",
-						"          estado_civil,",
-						"          profesion,",
-						"          nivel_estudios,",
-						"          municipio,",
-						"          departamento,",
-						"          departamento_ci",
-						"     )) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_silver_to_gold_dim_punto_entrega')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "gold"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_spl_entregas_agencias",
-								"type": "DatasetReference"
-							},
-							"name": "sourceEntregasAg"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_sql_gold",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "aggregate1"
-						},
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          entrega_ag_id as short,",
-						"          asignacion_id as short,",
-						"          ci_beneficiaria as string,",
-						"          fecha_entrega as date,",
-						"          productos as string,",
-						"          lote as string,",
-						"          peso_kg as double,",
-						"          punto_entrega as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourceEntregasAg",
-						"sourceEntregasAg aggregate(groupBy(punto_entrega),",
-						"     total = count(punto_entrega)) ~> aggregate1",
-						"aggregate1 derive(nombre = punto_entrega,",
-						"          tipo = 'Centro de Distribución',",
-						"          municipio = case(like(upper(punto_entrega),'%LA PAZ%'),'LA PAZ', like(upper(punto_entrega),'%EL ALTO%'),'EL ALTO', like(upper(punto_entrega),'%COCHABAMBA%'),'COCHABAMBA', like(upper(punto_entrega),'%QUILLACOLLO%'),'QUILLACOLLO', like(upper(punto_entrega),'%SANTA CRUZ%'),'SANTA CRUZ DE LA SIERRA', like(upper(punto_entrega),'%MONTERO%'),'MONTERO', like(upper(punto_entrega),'%SUCRE%'),'SUCRE', like(upper(punto_entrega),'%TARIJA%'),'TARIJA', like(upper(punto_entrega),'%ORURO%'),'ORURO', like(upper(punto_entrega),'%POTOSI%'),'POTOSI', 'DESCONOCIDO'),",
-						"          departamento = case(like(upper(punto_entrega),'%LA PAZ%') || like(upper(punto_entrega),'%EL ALTO%'),'LA PAZ', like(upper(punto_entrega),'%COCHABAMBA%') || like(upper(punto_entrega),'%QUILLACOLLO%'),'COCHABAMBA', like(upper(punto_entrega),'%SANTA CRUZ%') || like(upper(punto_entrega),'%MONTERO%'),'SANTA CRUZ', like(upper(punto_entrega),'%SUCRE%'),'CHUQUISACA', like(upper(punto_entrega),'%TARIJA%'),'TARIJA', like(upper(punto_entrega),'%ORURO%'),'ORURO', like(upper(punto_entrega),'%POTOSI%'),'POTOSI', 'DESCONOCIDO')) ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     truncate:true,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          punto_entrega,",
-						"          total,",
-						"          nombre,",
-						"          tipo,",
-						"          municipio,",
-						"          departamento",
 						"     )) ~> sink1"
 					]
 				}
