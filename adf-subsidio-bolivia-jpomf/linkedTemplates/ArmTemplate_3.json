@@ -13,6 +13,155 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_silver_csv_to_sql')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "copy_bja_inscripciones",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "inscripcion_id",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "inscripcion_id"
+										}
+									},
+									{
+										"source": {
+											"name": "establecimiento_id",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "establecimiento_id"
+										}
+									},
+									{
+										"source": {
+											"name": "fecha_inscripcion",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "fecha_inscripcion"
+										}
+									},
+									{
+										"source": {
+											"name": "semana_gestacion",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "semana_gestacion"
+										}
+									},
+									{
+										"source": {
+											"name": "estado",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "estado"
+										}
+									},
+									{
+										"source": {
+											"name": "ci_beneficiaria",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "ci_beneficiaria"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_csv_silver_bja_inscripciones",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sql_silver_bja_inscripciones",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"enableStaging": false
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "gold"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_as_almacenes')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1442,81 +1591,6 @@
 						"derivedColumn1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     partitionFileNames:['spl_entregas_supermercado.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_spl_supermercados')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "silver"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_bronze_spl_supermercados",
-								"type": "DatasetReference"
-							},
-							"name": "sourceSupermercados"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_csv_silver_spl_supermercados",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn1"
-						},
-						{
-							"name": "select1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          ID as string,",
-						"          Cadena as string,",
-						"          Sucursal as string,",
-						"          Municipio as string,",
-						"          {Dirección} as string,",
-						"          Estado as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourceSupermercados",
-						"sourceSupermercados derive(ID = toInteger(ID),",
-						"          Cadena = trim(Cadena),",
-						"          Sucursal = trim(Sucursal),",
-						"          Municipio = trim(Municipio),",
-						"          Estado = upper(trim(Estado)),",
-						"          {Dirección} = trim({Dirección})) ~> derivedColumn1",
-						"derivedColumn1 select(mapColumn(",
-						"          id_supermercado = ID,",
-						"          cadena = Cadena,",
-						"          sucursal = Sucursal,",
-						"          municipio = Municipio,",
-						"          {dirección} = {Dirección},",
-						"          estado = Estado",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['spl_supermercados.csv'],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     partitionBy('hash', 1)) ~> sink1"

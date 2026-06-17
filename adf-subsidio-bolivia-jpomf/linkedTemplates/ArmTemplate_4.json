@@ -13,6 +13,81 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_spl_supermercados')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "silver"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_bronze_spl_supermercados",
+								"type": "DatasetReference"
+							},
+							"name": "sourceSupermercados"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_csv_silver_spl_supermercados",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ID as string,",
+						"          Cadena as string,",
+						"          Sucursal as string,",
+						"          Municipio as string,",
+						"          {Dirección} as string,",
+						"          Estado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceSupermercados",
+						"sourceSupermercados derive(ID = toInteger(ID),",
+						"          Cadena = trim(Cadena),",
+						"          Sucursal = trim(Sucursal),",
+						"          Municipio = trim(Municipio),",
+						"          Estado = upper(trim(Estado)),",
+						"          {Dirección} = trim({Dirección})) ~> derivedColumn1",
+						"derivedColumn1 select(mapColumn(",
+						"          id_supermercado = ID,",
+						"          cadena = Cadena,",
+						"          sucursal = Sucursal,",
+						"          municipio = Municipio,",
+						"          {dirección} = {Dirección},",
+						"          estado = Estado",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['spl_supermercados.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_bronze_to_silver_sup_boletas')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1680,7 +1755,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_bronze_to_silver_spl_supermercados')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pl_bronze_to_silver_sup')]",
